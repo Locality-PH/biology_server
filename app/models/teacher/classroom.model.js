@@ -37,6 +37,7 @@ module.exports = (mongoose) => {
     },
     { timestamps: true }
   );
+  
   ClassroomSchema.method("toJSON", function () {
     const { __v, _id, ...object } = this.toObject();
     object.teacher_id = _id;
