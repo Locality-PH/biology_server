@@ -27,10 +27,6 @@ app.get("/", (_, res) => {
 // require("./app/routes/users.routes")(app);
 // require("./app/routes/exercises.routes")(app);
 require("./app/routes/")(app);
-
-const classroomRouter = require("./app/routes/classroom.routes")
-app.use("/classroom", classroomRouter)
-
 // set port, listen for requests
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

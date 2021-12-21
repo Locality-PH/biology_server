@@ -2,6 +2,7 @@ module.exports = (mongoose) => {
   var ClassroomSchema = mongoose.Schema(
     {
       _id: { type: mongoose.Schema.Types.ObjectId },
+      name: { type: String },
       response: [
         {
           type: mongoose.Schema.Types.ObjectId,
