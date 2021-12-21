@@ -3,11 +3,13 @@ module.exports = (mongoose) => {
     {
       _id: { type: mongoose.Schema.Types.ObjectId },
       email: { type: String },
-      name: { type: String },
       uuid: { type: String },
-      access_token: { type: String },
       role: { type: String },
       refresh_token: { type: String },
+      access_token: { type: String },
+      teacher: { type: mongoose.Schema.Types.ObjectId, ref: "teachers" },
+      student: { type: mongoose.Schema.Types.ObjectId, ref: "students" },
+
       // members: [
       //   [
       //     {
@@ -32,6 +34,6 @@ module.exports = (mongoose) => {
     object.auth_id = _id;
     return object;
   });
-  const Tokens = mongoose.model("accounts_infos", accountSchema);
-  return Tokens;
+  const Accounts = mongoose.model("accounts_infos", accountSchema);
+  return Accounts;
 };
