@@ -3,14 +3,12 @@ module.exports = (mongoose) => {
     {
       _id: { type: mongoose.Schema.Types.ObjectId },
       email: { type: String },
-      name: { type: String },
       uuid: { type: String },
-      access_token: { type: String },
       role: { type: String },
       refresh_token: { type: String },
       access_token: { type: String },
-      teacher: [{ type: mongoose.Schema.Types.ObjectId, ref: "teachers" }],
-      student: [{ type: mongoose.Schema.Types.ObjectId, ref: "students" }],
+      teacher: { type: mongoose.Schema.Types.ObjectId, ref: "teachers" },
+      student: { type: mongoose.Schema.Types.ObjectId, ref: "students" },
 
       // members: [
       //   [

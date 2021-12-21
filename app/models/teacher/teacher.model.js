@@ -2,6 +2,8 @@ module.exports = (mongoose) => {
   var TeacherSChema = mongoose.Schema(
     {
       _id: { type: mongoose.Schema.Types.ObjectId },
+      first_name: { type: String },
+      last_name: { type: String },
       classroom: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "classrooms",
