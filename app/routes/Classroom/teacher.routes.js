@@ -4,7 +4,7 @@ module.exports = (app) => {
     
     router.post("/create-classroom", teacherController.createClassroom);
     router.get("/get-classrooms/:user_id", teacherController.getClassrooms);
-    router.get("/visit-classroom/:classroom_id", teacherController.visitClassroom);
+    router.get("/visit-classroom/:class_code", teacherController.visitClassroom);
     router.post("/delete-classroom", teacherController.deleteClassroom);
   
     app.use("/teacher", router);
