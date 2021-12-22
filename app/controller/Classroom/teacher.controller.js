@@ -53,7 +53,7 @@ exports.getClassrooms = (req, res) => {
                         console.log(err)
                     }
                     else{
-                        return res.json(result)
+                        return res.json(result.classroom)
                     }
                 })
             }
@@ -62,14 +62,14 @@ exports.getClassrooms = (req, res) => {
 };
 
 exports.visitClassroom = (req, res) => {
-    const classroomId = req.params.classroom_id
+    const class_code = req.params.class_code
 
-    Classroom.find({_id: classroomId}, (err, result) =>{
+    Classroom.find({class_code: class_code}, (err, result) =>{
         if(err){
             console.log(err)
         }
         else{
-            res.json(result)
+            res.json(result[0])
         }
     })
 };
