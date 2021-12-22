@@ -1,7 +1,9 @@
 const db = require("../../models");
 var mongoose = require("mongoose");
+
 const Account = db.account;
 const Teacher = db.teacher;
+
 exports.registerUser = async (req, res) => {
   var account_id = new mongoose.Types.ObjectId();
   var teacher_id = new mongoose.Types.ObjectId();
@@ -48,8 +50,27 @@ exports.registerUser = async (req, res) => {
       });
     });
 };
+
 exports.loginUser = async (req, res) => {
   Account.find({ uuid: req.params.id })
     .then((users) => res.json(users))
     .catch((err) => res.status(400).json("Error: " + err));
+};
+
+exports.getUser = (req, res) => {
+  const userID = req.params.userID
+  console.log(userID)
+
+  try {
+    Account.findById(userID, (err, result) => {
+      if (err) {
+        res.json(err);
+      } else {
+        console.log(result)
+        res.json(result);
+      }
+    })
+  } catch (error) {
+    console.log(error)
+  }
 };
