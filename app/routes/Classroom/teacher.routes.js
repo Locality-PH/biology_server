@@ -3,9 +3,9 @@ module.exports = (app) => {
     var router = require("express").Router();
     
     router.post("/create-classroom", teacherController.createClassroom);
-    router.get("/get-classroom", teacherController.getClassroom);
-    // router.get("/classroom", teacherController.getClassroom);
-    // router.get("/classroom", teacherController.getClassroom);
+    router.get("/get-classrooms/:user_id", teacherController.getClassrooms);
+    router.get("/visit-classroom/:classroom_id", teacherController.visitClassroom);
+    router.post("/delete-classroom", teacherController.deleteClassroom);
   
     app.use("/teacher", router);
   };
