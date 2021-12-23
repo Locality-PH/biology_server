@@ -17,7 +17,19 @@ POST http://localhost:5000/pre/barangay
 Content-Type: application/json
 
 {
-     "barangay_name": "BARAS"
+    "address": "231",
+    "auth_id": "OpbH0odClBSymVIIw2DWRrJ7PfJ3",
+    "barangay_name": "231321",
+    "birthday": "2021-12-17T01:30:24.009Z",
+    "civil_status": "Married",
+    "email": "von.aralar@gmail.com",
+    "gender": "Male",
+    "middle_name": "13212",
+    "mobile": 123,
+    "municipality": "12",
+    "province": "1",
+    "role": "Administrator",
+    "telephone": 123
 }
 
 ###
