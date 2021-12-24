@@ -74,3 +74,67 @@ exports.getUser = (req, res) => {
     console.log(error)
   }
 };
+
+exports.loginGoogleUser = async (req, res) => {
+  const user = req.body.user
+  const email = user.email
+  const uid = user.uid
+  var currentUserId
+  console.log(user)
+  console.log(email)
+  console.log(uid)
+
+  //Check if user exist
+  await Account.exists({ email },
+    async (err, result) => {
+      if (err) {
+        console.log(err)
+      } else {
+        currentUserId = result
+        if (currentUserId !== null) {
+          // if user existed
+          console.log(currentUserId)
+          res.json(uid)
+        } else {
+          console.log("user need to be register")
+
+          var account_id = new mongoose.Types.ObjectId();
+          var teacher_id = new mongoose.Types.ObjectId();
+
+          console.log(account_id);
+          console.log(teacher_id);
+
+          const users = new Account({
+            _id: account_id,
+            uuid: uid,
+            email: email,
+            role: "Admin",
+            teacher: teacher_id,
+          });
+          const teacher = new Teacher({
+            _id: teacher_id,
+          });
+          await users
+            .save(users)
+            .then(async (_) => {
+              await teacher
+                .save(teacher)
+                .catch((err) => {
+                  console.log(err)
+                });
+            })
+            .catch((err) => {
+              console.log(err)
+            });
+
+            console.log("Account registered")
+            console.log(uid)
+            res.json(uid)
+        }
+
+      }
+    }
+  )
+
+}
+

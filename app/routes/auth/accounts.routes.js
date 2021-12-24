@@ -5,6 +5,7 @@ module.exports = (app) => {
 
   // router.post("/add", accounts.add);
   router.post("/admin/register", accounts.registerUser);
+  router.post("/admin/google-login", accounts.loginGoogleUser);
   router.get("/admin/login/:id", accounts.loginUser);
   router.get("/admin/:userID", accounts.getUser);
 
