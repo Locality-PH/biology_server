@@ -7,9 +7,12 @@ module.exports = (app) => {
 
     router.get("/get-classrooms/:user_id", teacherController.getClassrooms);
     router.get("/visit-classroom/:class_code", teacherController.visitClassroom);
+    router.get("/get-classroom-modules/:classroom_id", teacherController.getClassroomModules);
+
+
     router.post("/delete-classroom", teacherController.deleteClassroom);
 
-    router.get("/download-module", teacherController.downloadModule);
+    router.get("/download-module/:module_id", teacherController.downloadModule);
   
     app.use("/teacher", router);
   };

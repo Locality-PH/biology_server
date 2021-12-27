@@ -73,30 +73,57 @@ exports.createClassroom = (req, res) => {
 exports.getClassroomCode = (req, res) => {
     const classroomId = req.params.classroom_id
 
-    Classroom.find({_id: classroomId}, (err, result) =>{
+    Classroom.findOne({_id: classroomId}, (err, result) =>{
         if(err){
             console.log(err)
         }
         else{
-            res.json(result[0].class_code)
+            res.json(result.class_code)
+        }
+    })
+}
+
+// exports.getClassroomStudents = (req, res) =>{
+//     const classroomId = req.params.classroom_id
+
+//     Classroom.findOne({_id: classroomId}).populate("student_enrolled").exec((err, result) =>{
+//         if(err){
+//             console.log(err)
+//         }
+//         else{
+//             res.json(result)
+//         }
+//     })
+// }
+
+exports.getClassroomModules = (req, res) =>{
+    const classroomId = req.params.classroom_id
+
+    Classroom.findOne({_id: classroomId}).populate("module").exec((err, result) =>{
+        if(err){
+            console.log(err)
+        }
+        else{
+            res.json(result.module)
         }
     })
 }
 
 exports.downloadModule = (req, res) => {
-    Module.find({_id: "61c80dc6dd11a225b0d512a3"}, (err, result) => {
+    const moduleId = req.params.module_id
+    Module.findOne({_id: moduleId}, (err, result) => {
         if(err)
         {
             console.log(err)
         }
         else
         {
-            console.log( result[0].module_file.filename)
+            console.log( result.module_file.filename)
             res.set({
                 "Content-Type": "application/pdf",
-                "Content-Disposition": "attachment; filename=" + result[0].module_name + ".pdf"
+                "Content-Disposition": "attachment; filename=" + result.module_file.filename
               });
-            res.end(result[0].module_file.file)
+            res.end(result.module_file.file)
         }
     })
 
@@ -130,12 +157,12 @@ exports.getClassrooms = (req, res) => {
 exports.visitClassroom = (req, res) => {
     const class_code = req.params.class_code
 
-    Classroom.find({class_code: class_code}, (err, result) =>{
+    Classroom.findOne({class_code: class_code}, (err, result) =>{
         if(err){
             console.log(err)
         }
         else{
-            res.json(result[0])
+            res.json(result)
         }
     })
 };
@@ -147,10 +174,11 @@ exports.deleteClassroom = (req, res) => {
     const classroomId = req.body["classroom_id"]
     const userId = req.body["user_id"];
     var teacherId = ""
+    var classroomModule = []
 
     Account.findOne({_id: userId}).populate("teacher").exec((err, result) =>{
         if(err){
-            console.log(err)
+            return res.json("Error")
         }
         else{
             teacherId = result.teacher._id
@@ -158,15 +186,26 @@ exports.deleteClassroom = (req, res) => {
             if(teacherId != ""){
                 Teacher.updateOne({_id: teacherId}, {$pull: {classroom: classroomId}}, (err, result) =>{
                     if(err){
-                        console.log(err)
+                        return res.json("Error")
                     }
                     else{
-                        Classroom.deleteOne({_id: classroomId}, (err, result) => {
+                        Classroom.findOne({_id: classroomId}, (err, result) =>{
                             if(err){
-                                console.log(err)
+                                return res.json("Error")
                             }
                             else{
-                                res.json("Deleted")
+                                classroomModule = result.module
+                                if(classroomModule.length != 0){
+                                    Module.deleteMany({ _id : { $in: classroomModule}});
+                                    Classroom.deleteOne({_id: classroomId}, (err, result) => {
+                                        if(err){
+                                            console.log(err)
+                                        }
+                                        else{
+                                            res.json("Delete Classroom")
+                                        }
+                                    })
+                                }
                             }
                         })
                     }
@@ -174,6 +213,5 @@ exports.deleteClassroom = (req, res) => {
             }
         }
     })
-
     
 };
