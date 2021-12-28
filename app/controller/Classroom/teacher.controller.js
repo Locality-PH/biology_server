@@ -83,52 +83,6 @@ exports.getClassroomCode = (req, res) => {
     })
 }
 
-// exports.getClassroomStudents = (req, res) =>{
-//     const classroomId = req.params.classroom_id
-
-//     Classroom.findOne({_id: classroomId}).populate("student_enrolled").exec((err, result) =>{
-//         if(err){
-//             console.log(err)
-//         }
-//         else{
-//             res.json(result)
-//         }
-//     })
-// }
-
-exports.getClassroomModules = (req, res) =>{
-    const classroomId = req.params.classroom_id
-
-    Classroom.findOne({_id: classroomId}).populate("module").exec((err, result) =>{
-        if(err){
-            console.log(err)
-        }
-        else{
-            res.json(result.module)
-        }
-    })
-}
-
-exports.downloadModule = (req, res) => {
-    const moduleId = req.params.module_id
-    Module.findOne({_id: moduleId}, (err, result) => {
-        if(err)
-        {
-            console.log(err)
-        }
-        else
-        {
-            console.log( result.module_file.filename)
-            res.set({
-                "Content-Type": "application/pdf",
-                "Content-Disposition": "attachment; filename=" + result.module_file.filename
-              });
-            res.end(result.module_file.file)
-        }
-    })
-
-}
-
 exports.getClassrooms = (req, res) => {
     const userId = req.params.user_id;
     var teacherId = ""
@@ -150,19 +104,6 @@ exports.getClassrooms = (req, res) => {
                     }
                 })
             }
-        }
-    })
-};
-
-exports.visitClassroom = (req, res) => {
-    const class_code = req.params.class_code
-
-    Classroom.findOne({class_code: class_code}, (err, result) =>{
-        if(err){
-            console.log(err)
-        }
-        else{
-            res.json(result)
         }
     })
 };
@@ -213,5 +154,71 @@ exports.deleteClassroom = (req, res) => {
             }
         }
     })
-    
 };
+
+// exports.getClassroomStudents = (req, res) =>{
+//     const classroomId = req.params.classroom_id
+
+//     Classroom.findOne({_id: classroomId}).populate("student_enrolled").exec((err, result) =>{
+//         if(err){
+//             console.log(err)
+//         }
+//         else{
+//             res.json(result)
+//         }
+//     })
+// }
+
+exports.getClassroomModules = (req, res) =>{
+    const class_code = req.params.class_code
+
+    Classroom.findOne({class_code: class_code}).populate("module").exec((err, result) =>{
+        if(err){
+            console.log(err)
+        }
+        else{
+            res.json(result.module)
+        }
+    })
+}
+
+exports.downloadModule = (req, res) => {
+    const moduleId = req.params.module_id
+    Module.findOne({_id: moduleId}, (err, result) => {
+        if(err)
+        {
+            console.log(err)
+        }
+        else
+        {
+            console.log( result.module_file.filename)
+            res.set({
+                "Content-Type": "application/pdf",
+                "Content-Disposition": "attachment; filename=" + result.module_file.filename
+              });
+            res.end(result.module_file.file)
+        }
+    })
+
+}
+
+exports.deleteModule = (req, res) => {
+    const moduleId = req.body["module_id"]
+    const classCode = req.body["class_code"]
+
+    Classroom.updateOne({class_code: classCode}, {$pull: {module: moduleId}}, (err, result) =>{
+        if(err){
+            return res.json("Error")
+        }
+        else{
+            Module.deleteOne({_id: moduleId}, (err, result) => {
+                if(err){
+                    return res.json("Error")
+                }
+                else{
+                    return res.json("Deleted")
+                }
+            })
+        }
+    })
+}
