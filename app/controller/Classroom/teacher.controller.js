@@ -170,20 +170,62 @@ exports.deleteClassroom = (req, res) => {
 // }
 
 exports.getClassroomModules = (req, res) =>{
-    const class_code = req.params.class_code
+    const classCode = req.params.class_code
 
-    Classroom.findOne({class_code: class_code}).populate("module").exec((err, result) =>{
+    Classroom.findOne({class_code: classCode}).populate("module").exec((err, result) =>{
         if(err){
-            console.log(err)
+            return res.json("Error")
         }
         else{
-            res.json(result.module)
+            if(result != null){
+                return res.json(result.module)
+            }else{
+                return res.json("Error")
+            }
+        }
+    })
+}
+
+exports.viewModule = (req, res) => {
+    const moduleId = req.params.module_id
+
+    Module.findOne({_id: moduleId}, (err, result) => {
+        if(err)
+        {
+            console.log(err)
+        }
+        else
+        {
+            if(result != null){
+                return res.end(result.module_file.file)
+            }else{
+                return res.json("Error")
+            }
+        }
+    })
+
+}
+
+exports.getModule = (req, res) =>{
+    const moduleId = req.params.module_id
+
+    Module.findOne({_id: moduleId}, (err, result) =>{
+        if(err){
+            return res.json("Error")
+        }
+        else{
+            if(result != null){
+                return res.json(result)
+            }else{
+                return res.json("Error")
+            }
         }
     })
 }
 
 exports.downloadModule = (req, res) => {
     const moduleId = req.params.module_id
+    
     Module.findOne({_id: moduleId}, (err, result) => {
         if(err)
         {
