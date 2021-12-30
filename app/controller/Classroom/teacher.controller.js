@@ -6,6 +6,7 @@ const Module = db.modules;
 var mongoose = require("mongoose");
 
 exports.createClassroom = (req, res) => {
+    var moduleFinalVal = []
     const reqValues = JSON.parse(req.body.values)
     var reqFiles = ""
 
@@ -24,25 +25,30 @@ exports.createClassroom = (req, res) => {
     if(Array.isArray(reqFiles)){
         reqFiles.map((result, i) => {
             const module_id = new mongoose.Types.ObjectId();
-            const moduleData = new Module({_id: module_id, 
+
+            moduleFinalVal.push({_id: module_id, 
                 module_file: {file: result.data, filename: result.name, mimetype: result.mimetype}, 
                 module_name: reqValues.modules_name[i], 
                 quiz_link: reqValues.quizs_link[i]})
 
             moduleIds.push(module_id)
-            moduleData.save()
-            
         })
     }else if(reqFiles != ""){
         const module_id = new mongoose.Types.ObjectId();
-        const moduleData = new Module({_id: module_id, 
+
+        moduleFinalVal.push({_id: module_id, 
             module_file: {file: reqFiles.data, filename: reqFiles.name, mimetype: reqFiles.mimetype}, 
             module_name: reqValues.modules_name[0], 
             quiz_link: reqValues.quizs_link[0]})
-        
+
         moduleIds.push(module_id)
-        moduleData.save()
     }
+    
+    try {
+        Module.insertMany(moduleFinalVal);
+     } catch (e) {
+        console.log(e);
+     }
 
     Account.findOne({_id: userId}).populate("teacher").exec((err, result) =>{
         if(err){
@@ -215,7 +221,7 @@ exports.getModule = (req, res) =>{
         }
         else{
             if(result != null){
-                return res.json(result)
+                return res.json(result.module_file.file)
             }else{
                 return res.json("Error")
             }

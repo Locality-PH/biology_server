@@ -9,7 +9,8 @@ module.exports = (mongoose) => {
         mimetype: { type: String, required: true },
       },
       module_name: { type: String, required: true },
-      quiz_link : { type: String, required: true }
+      quiz_link : { type: String, required: true },
+      finished: {type: Number, default: 0}
     },
     { timestamps: true }
   );
