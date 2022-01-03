@@ -3,6 +3,7 @@ module.exports = (mongoose) => {
     {
       _id: { type: mongoose.Schema.Types.ObjectId },
       name: { type: String },
+      description: { type: String },
       response: [
         {
           type: mongoose.Schema.Types.ObjectId,

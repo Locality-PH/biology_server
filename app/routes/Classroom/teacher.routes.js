@@ -6,7 +6,13 @@ module.exports = (app) => {
     router.get("/get-classroom-code/:classroom_id", teacherController.getClassroomCode);
 
     router.get("/get-classrooms/:user_id", teacherController.getClassrooms);
+
+    router.get("/get-classroom-data/:class_code", teacherController.getClassroomData);
+    router.post("/update-classroom/:class_code", teacherController.updateClassroom);
+
     router.post("/delete-classroom", teacherController.deleteClassroom);
+
+    router.get("/get-classroom-students/:class_code", teacherController.getClassroomStudents)
 
     router.get("/get-classroom-modules/:class_code", teacherController.getClassroomModules);
     router.get("/view-module/:module_id", teacherController.viewModule);
@@ -15,4 +21,4 @@ module.exports = (app) => {
     router.post("/delete-module", teacherController.deleteModule);
 
     app.use("/teacher", router);
-  };
+};

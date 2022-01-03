@@ -59,7 +59,8 @@ exports.createClassroom = (req, res) => {
 
             if(teacherId != ""){
                 const classroomData = new Classroom({_id: classroomId, 
-                    name: reqValues.name, 
+                    name: reqValues.name,
+                    description: reqValues.description,
                     section_name: reqValues.section_name, module: moduleIds})
             
                 Teacher.updateOne({_id: teacherId}, {$push: {classroom: [classroomData]}}, (err, result) =>{
@@ -114,7 +115,83 @@ exports.getClassrooms = (req, res) => {
     })
 };
 
+exports.getClassroomData = (req, res) => {
+    const classCode = req.params.class_code
+
+    Classroom.findOne({class_code: classCode}).populate("module").exec((err, result) =>{
+        if(err){
+            return res.json("Error")
+        }
+        else{
+            if(result != null){
+                return res.json(result)
+            }else{
+                return res.json("Error")
+            }
+        }
+    })
+}
 exports.updateClassroom = (req, res) => {
+    var moduleFinalVal = []
+    const reqValues = JSON.parse(req.body.values)
+    var reqFiles = ""
+
+    try{
+        reqFiles = req.files.file
+    }
+    catch(e){
+        reqFiles = ""
+    }
+
+    var classCode = req.params.class_code
+    const moduleIds = []
+
+    if(Array.isArray(reqFiles)){
+        reqFiles.map((result, i) => {
+            const module_id = new mongoose.Types.ObjectId();
+
+            moduleFinalVal.push({_id: module_id, 
+                module_file: {file: result.data, filename: result.name, mimetype: result.mimetype}, 
+                module_name: reqValues.modules_name[i], 
+                quiz_link: reqValues.quizs_link[i]})
+
+            moduleIds.push(module_id)
+        })
+    }else if(reqFiles != ""){
+        const module_id = new mongoose.Types.ObjectId();
+
+        moduleFinalVal.push({_id: module_id, 
+            module_file: {file: reqFiles.data, filename: reqFiles.name, mimetype: reqFiles.mimetype}, 
+            module_name: reqValues.modules_name[0], 
+            quiz_link: reqValues.quizs_link[0]})
+
+        moduleIds.push(module_id)
+    }
+    
+    try {
+        Module.insertMany(moduleFinalVal);
+        Classroom.updateOne({class_code: classCode}, {$push: { module: moduleIds}}, (err, result) =>{
+            if(err){
+                console.log(err)
+            }
+            else{
+                
+            }
+        })
+     } catch (e) {
+        console.log(e);
+     }
+    
+     Classroom.updateMany({class_code: classCode}, [{$set: {name: reqValues.name, 
+        description: reqValues.description, 
+        section_name: reqValues.section_name}}], (err, result) =>{
+            if(err){
+                console.log(err)
+            }
+            else{
+                res.json("Updated")
+            }
+        })
 };
 
 exports.deleteClassroom = (req, res) => {
@@ -162,18 +239,18 @@ exports.deleteClassroom = (req, res) => {
     })
 };
 
-// exports.getClassroomStudents = (req, res) =>{
-//     const classroomId = req.params.classroom_id
+exports.getClassroomStudents = (req, res) =>{
+    const classCode = req.params.class_code
 
-//     Classroom.findOne({_id: classroomId}).populate("student_enrolled").exec((err, result) =>{
-//         if(err){
-//             console.log(err)
-//         }
-//         else{
-//             res.json(result)
-//         }
-//     })
-// }
+    Classroom.findOne({class_code: classCode}).populate("student").exec((err, result) =>{
+        if(err){
+            console.log(err)
+        }
+        else{
+            res.json(result.student)
+        }
+    })
+}
 
 exports.getClassroomModules = (req, res) =>{
     const classCode = req.params.class_code
