@@ -85,7 +85,12 @@ exports.getClassroomCode = (req, res) => {
             console.log(err)
         }
         else{
-            res.json(result.class_code)
+            if(result != null){
+                res.json(result.class_code)
+            }else{
+                res.json("Error")
+            }
+           
         }
     })
 }
@@ -219,17 +224,27 @@ exports.deleteClassroom = (req, res) => {
                             }
                             else{
                                 classroomModule = result.module
+
                                 if(classroomModule.length != 0){
-                                    Module.deleteMany({ _id : { $in: classroomModule}});
-                                    Classroom.deleteOne({_id: classroomId}, (err, result) => {
-                                        if(err){
-                                            console.log(err)
-                                        }
-                                        else{
-                                            res.json("Delete Classroom")
-                                        }
+                                    classroomModule.map(result => {
+                                        Module.deleteOne({_id: result}, (err, result) => {
+                                            if(err){
+                                                console.log(err)
+                                            }
+                                            else{
+                                            }
+                                        })
                                     })
                                 }
+
+                                Classroom.deleteOne({_id: classroomId}, (err, result) => {
+                                    if(err){
+                                        console.log(err)
+                                    }
+                                    else{
+                                        res.json("Deleted")
+                                    }
+                                })
                             }
                         })
                     }
