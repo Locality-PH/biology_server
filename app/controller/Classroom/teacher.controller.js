@@ -136,6 +136,104 @@ exports.getClassroomData = (req, res) => {
         }
     })
 }
+
+exports.getClassroomModulesArray = (req, res) => {
+    const classCode = req.params.class_code
+
+    Classroom.findOne({class_code: classCode}, (err, result) =>{
+        if(err){
+            return res.json("Error")
+        }
+        else{
+            if(result != null){
+                return res.json(result.module)
+            }else{
+                return res.json("Error")
+            }
+        }
+    })
+}
+
+exports.updateInitialModules = (req, res) => {
+    const reqValues = JSON.parse(req.body.values)
+    var reqFiles = ""
+
+    try{
+        reqFiles = req.files.file
+    }
+    catch(e){
+        reqFiles = ""
+    }
+
+    // console.log(reqValues)
+    // console.log(reqFiles)
+
+    reqValues.delete_initial_modules.map(moduleId => {
+        Classroom.updateOne({class_code: reqValues.class_code}, {$pull: {module: moduleId}}, (err, result) =>{
+            if(err){
+                return res.json("Error")
+            }
+            else{
+                Module.deleteOne({_id: moduleId}, (err, result) => {
+                    if(err){
+                        return res.json("Error")
+                    }
+                    else{
+                        // Deleted
+                    }
+                })
+            }
+        })
+    })
+
+    if(Array.isArray(reqFiles)){
+            reqValues.nfl_initial_modules_id.map((moduleId, i) => {
+                Module.updateOne({_id: moduleId}, {module_name: reqValues.nfl_initial_modules_name[i],
+                    quiz_link: reqValues.nfl_initial_modules_link[i],
+                    module_file: {file: reqFiles[i].data,
+                    filename: reqFiles[i].name,
+                    mimetype: reqFiles[i].mimetype}
+                }, (err, result) => {
+                    if(err){
+                        return res.json("Error")
+                    }
+                    else{
+                        // Deleted
+                    }
+                })
+            })
+    }else if(reqFiles != ""){
+        reqValues.nfl_initial_modules_id.map((moduleId, i) => {
+            Module.updateOne({_id: moduleId}, {module_name: reqValues.nfl_initial_modules_name[i],
+                quiz_link: reqValues.nfl_initial_modules_link[i],
+                module_file: {file: reqFiles.data,
+                filename: reqFiles.name,
+                mimetype: reqFiles.mimetype}
+            }, (err, result) => {
+                if(err){
+                    return res.json("Error")
+                }
+                else{
+                    // Deleted
+                }
+            })
+        })
+    }
+
+    reqValues.nl_initial_modules_id.map((moduleId, i) => {
+        Module.updateOne({_id: moduleId}, {module_name: reqValues.nl_initial_modules_name[i],
+            quiz_link: reqValues.nl_initial_modules_link[i]
+        }, (err, result) => {
+            if(err){
+                return res.json("Error")
+            }
+            else{
+                // Deleted
+            }
+        })
+    })
+}
+
 exports.updateClassroom = (req, res) => {
     var moduleFinalVal = []
     const reqValues = JSON.parse(req.body.values)

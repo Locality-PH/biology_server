@@ -8,6 +8,8 @@ module.exports = (app) => {
     router.get("/get-classrooms/:user_id", teacherController.getClassrooms);
 
     router.get("/get-classroom-data/:class_code", teacherController.getClassroomData);
+    router.get("/get-classroom-modules-array/:class_code", teacherController.getClassroomModulesArray);
+    router.post("/update-initial-modules/:class_code", teacherController.updateInitialModules);
     router.post("/update-classroom/:class_code", teacherController.updateClassroom);
 
     router.post("/delete-classroom", teacherController.deleteClassroom);
