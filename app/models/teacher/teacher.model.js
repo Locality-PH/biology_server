@@ -4,10 +4,13 @@ module.exports = (mongoose) => {
       _id: { type: mongoose.Schema.Types.ObjectId },
       first_name: { type: String },
       last_name: { type: String },
-      classroom: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "classrooms",
-      }],
+      midle_name: { type: String },
+      classroom: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "classrooms",
+        },
+      ],
     },
     { timestamps: true }
   );

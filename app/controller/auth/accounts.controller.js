@@ -19,6 +19,8 @@ exports.registerUser = async (req, res) => {
     _id: account_id,
     uuid: req.body.uuid,
     email: req.body.email,
+    first_name: req.body.firstName,
+    last_name: req.body.lastName,
     role: "Admin",
     teacher: teacher_id,
   });
@@ -88,8 +90,10 @@ exports.loginGoogleUser = async (req, res) => {
   const user = req.body.user;
   const email = user.email;
   const uid = user.uid;
+  const splitUser = user.displayName;
+  const namelist = splitUser.split(" ");
   var currentUserId;
-  console.log(user);
+  console.log(namelist[0]);
   console.log(email);
   console.log(uid);
 
@@ -116,6 +120,8 @@ exports.loginGoogleUser = async (req, res) => {
           _id: account_id,
           uuid: uid,
           email: email,
+          first_name: namelist[0],
+          last_name: namelist[1],
           role: "Admin",
           teacher: teacher_id,
         });
@@ -144,6 +150,8 @@ exports.loginGoogleUserStudent = async (req, res) => {
   const user = req.body.user;
   const email = user.email;
   const uid = user.uid;
+  const splitUser = user.displayName;
+  const namelist = splitUser.split(" ");
   var currentUserId;
   console.log(user);
   console.log(email);
@@ -173,6 +181,8 @@ exports.loginGoogleUserStudent = async (req, res) => {
           uuid: uid,
           email: email,
           role: "Student",
+          first_name: namelist[0],
+          last_name: namelist[1],
           student: student_id,
         });
         const student = new Student({
