@@ -6,10 +6,18 @@ Content-Type: application/json
 "auth_id": "1231"
 
 }
+###
+POST http://localhost:5000/student/register 
+Content-Type: application/json
 
+{
+"email": "asdsada",
+"auth_id": "1231"
+
+}
 ###
 
-GET http://localhost:5000/admin/login/6lzuk1kvchbCHEA9YgMNJKxu5Rz2
+GET http://localhost:5000/student/login/lpvydFfrljdiv1Vny9gPGCF67eG2
 Content-Type: application/json
 
 ###
@@ -17,7 +25,19 @@ POST http://localhost:5000/pre/barangay
 Content-Type: application/json
 
 {
-     "barangay_name": "BARAS"
+    "address": "231",
+    "auth_id": "OpbH0odClBSymVIIw2DWRrJ7PfJ3",
+    "barangay_name": "231321",
+    "birthday": "2021-12-17T01:30:24.009Z",
+    "civil_status": "Married",
+    "email": "von.aralar@gmail.com",
+    "gender": "Male",
+    "middle_name": "13212",
+    "mobile": 123,
+    "municipality": "12",
+    "province": "1",
+    "role": "Administrator",
+    "telephone": 123
 }
 
 ###

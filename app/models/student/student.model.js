@@ -6,6 +6,12 @@ module.exports = (mongoose) => {
       last_name: { type: String },
       midle_name: { type: String },
       account: { type: mongoose.Schema.Types.ObjectId, ref: "accounts_infos" },
+      classroom: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "classrooms",
+        },
+      ],
     },
     { timestamps: true }
   );

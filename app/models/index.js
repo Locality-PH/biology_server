@@ -20,6 +20,6 @@ db.student_enrolled = require("./teacher/classrooms/student-enrolled.model.js")(
 //PresetModules
 db.presetmodules = require("./teacher/preset-modules.model.js")(mongoose);
 //Students
-db.students = require("./student/student.model.js")(mongoose);
+db.student = require("./student/student.model.js")(mongoose);
 
 module.exports = db;
