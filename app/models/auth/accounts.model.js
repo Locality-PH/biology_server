@@ -8,6 +8,7 @@ module.exports = (mongoose) => {
       first_name: { type: String },
       last_name: { type: String },
       midle_name: { type: String },
+      full_name: { type: String },
       refresh_token: { type: String },
       access_token: { type: String },
       teacher: { type: mongoose.Schema.Types.ObjectId, ref: "teachers" },

@@ -16,13 +16,13 @@ Content-Type: application/json
 
 }
 ###
-GET http://localhost:5000/admin/61dbec395585da4a741fefdd
+GET http://localhost:5000/admin/login/H6bzLGbUZ5bVzf92HoQcBkIsvlC3
 
 
 ###
 
 
-GET http://localhost:5000/student/login/lpvydFfrljdiv1Vny9gPGCF67eG2
+GET http://localhost:5000/student/login/H6bzLGbUZ5bVzf92HoQcBkIsvlC3
 Content-Type: application/json
 
 ###

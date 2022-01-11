@@ -19,8 +19,7 @@ exports.registerUser = async (req, res) => {
     _id: account_id,
     uuid: req.body.uuid,
     email: req.body.email,
-    first_name: req.body.firstName,
-    last_name: req.body.lastName,
+    full_name: req.body.fullName,
     role: "Admin",
     teacher: teacher_id,
   });
@@ -120,8 +119,9 @@ exports.loginGoogleUser = async (req, res) => {
           _id: account_id,
           uuid: uid,
           email: email,
-          first_name: namelist[0],
-          last_name: namelist[1],
+          // first_name: namelist[0],
+          // last_name: namelist[1],
+          full_name: user.displayName,
           role: "Admin",
           teacher: teacher_id,
         });
