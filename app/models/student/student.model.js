@@ -4,9 +4,7 @@ module.exports = (mongoose) => {
       _id: { type: mongoose.Schema.Types.ObjectId },
 
       account: { type: mongoose.Schema.Types.ObjectId, ref: "accounts_infos" },
-      first_name: { type: String },
-      last_name: { type: String },
-      midle_name: { type: String },
+      fullname: { type: String },
       classroom: [
         {
           type: mongoose.Schema.Types.ObjectId,
@@ -16,6 +14,7 @@ module.exports = (mongoose) => {
     },
     { timestamps: true }
   );
+  
   StudentSchema.method("toJSON", function () {
     const { __v, _id, ...object } = this.toObject();
     object.student_id = _id;
