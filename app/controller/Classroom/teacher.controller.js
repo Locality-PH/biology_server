@@ -3,6 +3,8 @@ const Account = db.account;
 const Classroom = db.classroom;
 const Teacher = db.teacher;
 const Module = db.modules;
+const Student = db.student
+const StudentEnrolled = db.student_enrolled
 var mongoose = require("mongoose");
 
 exports.createClassroom = (req, res) => {
@@ -19,8 +21,7 @@ exports.createClassroom = (req, res) => {
 
     var classroomId = new mongoose.Types.ObjectId();
     const moduleIds = []
-    const userId = reqValues.user_id
-    var teacherId = ""
+    const teacherId = reqValues.teacher_id
 
     if(Array.isArray(reqFiles)){
         reqFiles.map((result, i) => {
@@ -46,35 +47,25 @@ exports.createClassroom = (req, res) => {
     
     try {
         Module.insertMany(moduleFinalVal);
+
+        const classroomData = new Classroom({_id: classroomId, 
+            name: reqValues.name,
+            description: reqValues.description,
+            section_name: reqValues.section_name, module: moduleIds})
+        
+        classroomData.save()
+    
+        Teacher.updateOne({_id: teacherId}, {$push: {classroom: [classroomData]}}, (err, result) =>{
+            if(err){
+                console.log(err)
+            }
+            else{
+                return res.json(classroomId.toString())
+            }
+        })
      } catch (e) {
         console.log(e);
      }
-
-    Account.findOne({_id: userId}).populate("teacher").exec((err, result) =>{
-        if(err){
-            console.log(err)
-        }
-        else{
-            teacherId = result.teacher._id
-
-            if(teacherId != ""){
-                const classroomData = new Classroom({_id: classroomId, 
-                    name: reqValues.name,
-                    description: reqValues.description,
-                    section_name: reqValues.section_name, module: moduleIds})
-            
-                Teacher.updateOne({_id: teacherId}, {$push: {classroom: [classroomData]}}, (err, result) =>{
-                    if(err){
-                        console.log(err)
-                    }
-                    else{
-                        classroomData.save()
-                        res.json(classroomId.toString())
-                    }
-                })
-            }
-        }
-    })
 };
 
 exports.getClassroomCode = (req, res) => {
@@ -96,26 +87,14 @@ exports.getClassroomCode = (req, res) => {
 }
 
 exports.getClassrooms = (req, res) => {
-    const userId = req.params.user_id;
-    var teacherId = ""
+    const teacherId = req.params.teacher_id
 
-    Account.findOne({_id: userId}).populate("teacher").exec((err, result) =>{
+    Teacher.findOne({_id: teacherId}).populate("classroom").exec((err, result) =>{
         if(err){
             console.log(err)
         }
         else{
-            teacherId = result.teacher._id
-
-            if(teacherId != ""){
-                Teacher.findOne({_id: teacherId}).populate("classroom").exec((err, result) =>{
-                    if(err){
-                        console.log(err)
-                    }
-                    else{
-                        return res.json(result.classroom)
-                    }
-                })
-            }
+            return res.json(result.classroom)
         }
     })
 };
@@ -299,55 +278,77 @@ exports.updateClassroom = (req, res) => {
 
 exports.deleteClassroom = (req, res) => {
     const classroomId = req.body["classroom_id"]
-    const userId = req.body["user_id"];
-    var teacherId = ""
-    var classroomModule = []
+    const teacherId = req.body["teacher_id"]
+    var classroomModules = []
+    var classroomStudents = []
 
-    Account.findOne({_id: userId}).populate("teacher").exec((err, result) =>{
+    Teacher.updateOne({_id: teacherId}, {$pull: {classroom: classroomId}}, (err, result) =>{
         if(err){
             return res.json("Error")
         }
         else{
-            teacherId = result.teacher._id
+            Classroom.findOne({_id: classroomId}, (err, result) =>{
+                if(err){
+                    return res.json("Error")
+                }
+                else{
+                    classroomModules = result.module
+                    classroomStudents = result.student
 
-            if(teacherId != ""){
-                Teacher.updateOne({_id: teacherId}, {$pull: {classroom: classroomId}}, (err, result) =>{
-                    if(err){
-                        return res.json("Error")
+                    if(classroomModules.length != 0){
+                        classroomModules.map(id => {
+                            Module.deleteOne({_id: id}, (err, result) => {
+                                if(err){
+                                    console.log(err)
+                                }
+                                else{
+                                }
+                            })
+                        })
                     }
-                    else{
-                        Classroom.findOne({_id: classroomId}, (err, result) =>{
-                            if(err){
-                                return res.json("Error")
-                            }
-                            else{
-                                classroomModule = result.module
 
-                                if(classroomModule.length != 0){
-                                    classroomModule.map(result => {
-                                        Module.deleteOne({_id: result}, (err, result) => {
+                    if(classroomStudents.length != 0){
+                        classroomStudents.map(id => {
+                            StudentEnrolled.findOne({_id: id}, (err, result) => {
+                                if(err){
+                                    console.log(err)
+                                }
+                                else{
+                                    if(result != null){
+                                        Student.updateOne({_id: result.students.toString()}, {$pull: {classroom: classroomId}}, (err, result) =>{
                                             if(err){
                                                 console.log(err)
                                             }
                                             else{
+                                                StudentEnrolled.deleteOne({_id: id}, (err, result) =>{
+                                                    if(err){
+                                                        console.log(err)
+                                                    }
+                                                    else{
+                                                       
+                                                    }
+                                                })
                                             }
                                         })
-                                    })
+                                    }
                                 }
 
-                                Classroom.deleteOne({_id: classroomId}, (err, result) => {
-                                    if(err){
-                                        console.log(err)
-                                    }
-                                    else{
-                                        res.json("Deleted")
-                                    }
-                                })
-                            }
+                            })
+                           
+                            
                         })
                     }
-                })
-            }
+
+                    Classroom.deleteOne({_id: classroomId}, (err, result) => {
+                        if(err){
+                            console.log(err)
+                        }
+                        else{
+                            res.json("Deleted")
+                        }
+                    })
+                }
+            })
         }
     })
 };
@@ -363,6 +364,51 @@ exports.getClassroomStudents = (req, res) =>{
             res.json(result.student)
         }
     })
+}
+
+exports.deleteStudent = (req, res) => {
+    const studentId = req.body["student_id"]
+    const studentEnrolledId = req.body["student_enrolled_id"]
+    const classCode = req.body["class_code"]
+    var classroomId = ""
+
+    Classroom.findOne({class_code: classCode}, (err, result) => {
+        if(err){
+            console.log(err)
+        }
+        else{
+            if(result != null){
+                classroomId = result._id
+                
+                Student.updateOne({_id: studentId}, {$pull: {classroom: classroomId.toString()}}, (err, result) =>{
+                    if(err){
+                        console.log(err)
+                    }
+                    else{
+                        StudentEnrolled.deleteOne({students: studentId}, (err, result) =>{
+                            if(err){
+                                console.log(err)
+                            }
+                            else{
+                            }
+                        })
+                    }
+                })
+
+                Classroom.updateOne({_id: classroomId}, {$pull: {student: studentEnrolledId}}, (err, result) =>{
+                    if(err){
+                        console.log(err)
+                    }
+                    else{
+                        res.json("Deleted")
+                    }
+                })
+            }
+        
+           
+        }
+    })
+   
 }
 
 exports.getClassroomModules = (req, res) =>{
