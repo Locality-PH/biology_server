@@ -3,9 +3,10 @@ module.exports = (app) => {
     var router = require("express").Router();
     
     router.post("/create-classroom", teacherController.createClassroom);
+    router.get("/get-teacher-fullname/:teacher_id", teacherController.getTeacherFullName);
     router.get("/get-classroom-code/:classroom_id", teacherController.getClassroomCode);
 
-    router.get("/get-classrooms/:user_id", teacherController.getClassrooms);
+    router.get("/get-classrooms/:teacher_id", teacherController.getClassrooms);
 
     router.get("/get-classroom-data/:class_code", teacherController.getClassroomData);
     router.get("/get-classroom-modules-array/:class_code", teacherController.getClassroomModulesArray);
@@ -15,6 +16,7 @@ module.exports = (app) => {
     router.post("/delete-classroom", teacherController.deleteClassroom);
 
     router.get("/get-classroom-students/:class_code", teacherController.getClassroomStudents)
+    router.post("/delete-student", teacherController.deleteStudent)
 
     router.get("/get-classroom-modules/:class_code", teacherController.getClassroomModules);
     router.get("/view-module/:module_id", teacherController.viewModule);
