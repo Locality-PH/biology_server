@@ -4,7 +4,7 @@ module.exports = function (app) {
   app.use(
     "/api",
     createProxyMiddleware({
-      target: "http://localhost:5000",
+      target: "https://xenodochial-gates-876873.netlify.app",
       changeOrigin: true,
     })
   );

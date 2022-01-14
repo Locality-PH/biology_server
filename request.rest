@@ -83,5 +83,9 @@ Get http://localhost:5000/student/get-classroom-modules/q6qthluzb
 Content-Type: application/json
 
 ###
-GET http://localhost:5000/student/download-module/61dfb738d12d11bbc992e324
+GET http://localhost:9000/.netlify/functions/api/student/download-module/61dfb738d12d11bbc992e324
+Content-Type: application/json
+
+###
+GET https://xenodochial-gates-876873.netlify.app/.netlify/functions/api/student/download-module/61dfb738d12d11bbc992e324
 Content-Type: application/json
