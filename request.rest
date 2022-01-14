@@ -16,7 +16,7 @@ Content-Type: application/json
 
 }
 ###
-GET http://localhost:5000/admin/login/QcOTeiLFs4NCXwq01PUPZR6LAl62
+GET http://localhost:9000/.netlify/functions/api/admin/login/QcOTeiLFs4NCXwq01PUPZR6LAl62
 
 
 ###
