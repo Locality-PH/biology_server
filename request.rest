@@ -2,7 +2,7 @@ POST http://localhost:5000/admin/register
 Content-Type: application/json
 
 {
-"email": "Jim",
+"email": "Jism",
 "auth_id": "1231"
 
 }
