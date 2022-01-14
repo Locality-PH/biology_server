@@ -50,6 +50,7 @@ exports.createClassroom = (req, res) => {
 
         const classroomData = new Classroom({_id: classroomId, 
             name: reqValues.name,
+            teacher_name: reqValues.teacher_name,
             description: reqValues.description,
             section_name: reqValues.section_name, module: moduleIds})
         
@@ -67,6 +68,25 @@ exports.createClassroom = (req, res) => {
         console.log(e);
      }
 };
+
+exports.getTeacherFullName = (req, res) => {
+    const teacherId = req.params.teacher_id
+
+    Account.findOne({teacher: teacherId}, (err, result) =>{
+        if(err){
+            console.log(err)
+        }
+        else{
+            if(result != null){
+                return res.json(result.full_name)
+            }else{
+                return res.json("Error")
+            }
+           
+        }
+    })
+
+}
 
 exports.getClassroomCode = (req, res) => {
     const classroomId = req.params.classroom_id
