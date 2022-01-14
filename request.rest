@@ -76,3 +76,12 @@ Content-Type: application/json
 
 GET http://localhost:5000/app/users/yKUVy3Y9DmUQfgDNZzMu2BStJEr1
 Content-Type: application/json
+
+
+###
+Get http://localhost:5000/student/get-classroom-modules/q6qthluzb
+Content-Type: application/json
+
+###
+GET http://localhost:5000/student/download-module/61dfb738d12d11bbc992e324
+Content-Type: application/json
