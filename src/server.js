@@ -15,10 +15,13 @@ app.use(`/.netlify/functions/api`, router);
 
 require("./app/auth");
 db.mongoose
-  .connect(db.url, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(
+    "mongodb+srv://vonypet:vonypet@cluster0.tfhbu.mongodb.net/Biology?retryWrites=true&w=majority",
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  )
   .then(() => {
     console.log("Connected to the database!");
   })
