@@ -12,5 +12,5 @@ module.exports = (app) => {
   router.get("/student/login/:id", accounts.loginUserStudent);
   router.post("/student/google-login", accounts.loginGoogleUserStudent);
 
-  app.use("/", router);
+  app.use("/api", router);
 };
