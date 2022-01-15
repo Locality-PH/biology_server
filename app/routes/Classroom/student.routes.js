@@ -14,5 +14,5 @@ module.exports = (app) => {
 
     router.get("/get-classroom-students/:class_code", studentController.getClassroomStudents)
   
-    app.use("/student", router);
+    app.use("api/student", router);
   };

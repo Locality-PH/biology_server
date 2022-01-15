@@ -24,5 +24,5 @@ module.exports = (app) => {
     router.get("/download-module/:module_id", teacherController.downloadModule);
     router.post("/delete-module", teacherController.deleteModule);
 
-    app.use("/teacher", router);
+    app.use("api/teacher", router);
 };
