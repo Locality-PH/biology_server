@@ -1,0 +1,87 @@
+GET https://flamboyant-lichterman-5c5bcb.netlify.app/api/admin/login/QcOTeiLFs4NCXwq01PUPZR6LAl62
+Content-Type: application/json
+
+{
+"email": "Jissam",
+"auth_id": "123sss1"
+
+}
+###
+POST http://localhost:5000/student/register 
+Content-Type: application/json
+
+{
+"email": "asdsada",
+"auth_id": "1231"
+
+}
+###
+GET http://localhost:5000/api/admin/login/QcOTeiLFs4NCXwq01PUPZR6LAl62
+
+
+###
+
+
+GET http://localhost:3000/api/student/login/QcOTeiLFs4NCXwq01PUPZR6LAl62
+Content-Type: application/json
+
+###
+POST http://localhost:5000/pre/barangay
+Content-Type: application/json
+
+{
+    "address": "231",
+    "auth_id": "OpbH0odClBSymVIIw2DWRrJ7PfJ3",
+    "barangay_name": "231321",
+    "birthday": "2021-12-17T01:30:24.009Z",
+    "civil_status": "Married",
+    "email": "von.aralar@gmail.com",
+    "gender": "Male",
+    "middle_name": "13212",
+    "mobile": 123,
+    "municipality": "12",
+    "province": "1",
+    "role": "Administrator",
+    "telephone": 123
+}
+
+###
+POST http://localhost:5000/pre/
+Content-Type: application/json
+
+{
+    "barangay_id": "61bbe4d837b3edf68eb894f6",
+    "email": "WEAS.GMAIL.COM"
+}
+
+###
+
+GET http://localhost:5000/pre/barangay/61bbe4d837b3edf68eb894f6
+Content-Type: application/json
+
+###
+
+POST http://localhost:5000/pre/create-barangay
+Content-Type: application/json
+
+{
+    "barangay_name": "BARAS",
+    "email": "kill@gmail.com",
+    "auth_id": "YKKOg9aXC2RxAB5CPbtN7HBVXW32",
+    "role": "Administrator"
+}
+
+
+###
+
+GET http://localhost:5000/app/users/yKUVy3Y9DmUQfgDNZzMu2BStJEr1
+Content-Type: application/json
+
+
+###
+Get http://localhost:5000/student/get-classroom-modules/q6qthluzb
+Content-Type: application/json
+
+###
+GET https://biology-server.herokuapp.com/api/admin/login/QcOTeiLFs4NCXwq01PUPZR6LAl62
+Content-Type: application/json
