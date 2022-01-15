@@ -3,5 +3,5 @@ module.exports = (app) => {
     var router = require("express").Router();
     
     router.post("/create-quiz", quizController.createQuiz);
-    app.use("api/quiz", router);
+    app.use("/api/quiz", router);
   };
