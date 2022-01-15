@@ -7,7 +7,7 @@ Content-Type: application/json
 
 }
 ###
-POST http://localhost:5000/student/register 
+POST http://localhost:5000/api/student/register 
 Content-Type: application/json
 
 {
@@ -83,5 +83,10 @@ Get http://localhost:5000/student/get-classroom-modules/q6qthluzb
 Content-Type: application/json
 
 ###
-GET https://flamboyant-lichterman-5c5bcb.netlify.app/api/api/admin/login/CARNgBdf62dPnaEWPi6DgmLeRg53
+POST http://localhost:3000/api/admin/google-login
 Content-Type: application/json
+
+{
+"email": "asdsada",
+"auth_id": "1231" 
+}
