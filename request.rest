@@ -91,9 +91,13 @@ GET https://xenodochial-gates-876873.netlify.app/.netlify/functions/api/student/
 Content-Type: application/json
 
 ###
-POST https://flamboyant-lichterman-5c5bcb.netlify.app/admin/google-login
+POST https://flamboyant-lichterman-5c5bcb.netlify.app/api/student/google-login
 Content-Type: application/json
 
 ###
-POST http://localhost:3000/admin/google-login
+POST http://localhost:9000/.netlify/functions/api/admin/google-login
+Content-Type: application/json
+
+###
+GET https://flamboyant-lichterman-5c5bcb.netlify.app/api/api/admin/login/QcOTeiLFs4NCXwq01PUPZR6LAl62
 Content-Type: application/json
