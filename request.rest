@@ -1,18 +1,9 @@
-<<<<<<< HEAD
 GET https://flamboyant-lichterman-5c5bcb.netlify.app/api/admin/login/QcOTeiLFs4NCXwq01PUPZR6LAl62
 Content-Type: application/json
 
 {
 "email": "Jissam",
 "auth_id": "123sss1"
-=======
-POST http://localhost:5000/admin/register 
-Content-Type: application/json
-
-{
-"email": "Jism",
-"auth_id": "1231"
->>>>>>> 17ed1ec120cd678939c17bbe50179dcd8a139d9f
 
 }
 ###
@@ -25,21 +16,13 @@ Content-Type: application/json
 
 }
 ###
-<<<<<<< HEAD
 GET http://localhost:5000/api/admin/login/QcOTeiLFs4NCXwq01PUPZR6LAl62
-=======
-GET http://localhost:5000/admin/login/QcOTeiLFs4NCXwq01PUPZR6LAl62
->>>>>>> 17ed1ec120cd678939c17bbe50179dcd8a139d9f
 
 
 ###
 
 
-<<<<<<< HEAD
 GET http://localhost:3000/api/student/login/QcOTeiLFs4NCXwq01PUPZR6LAl62
-=======
-GET http://localhost:5000/student/login/QcOTeiLFs4NCXwq01PUPZR6LAl62
->>>>>>> 17ed1ec120cd678939c17bbe50179dcd8a139d9f
 Content-Type: application/json
 
 ###
@@ -100,9 +83,5 @@ Get http://localhost:5000/student/get-classroom-modules/q6qthluzb
 Content-Type: application/json
 
 ###
-<<<<<<< HEAD
-GET https://biology-server.herokuapp.com/api/admin/login/QcOTeiLFs4NCXwq01PUPZR6LAl62
-=======
-GET http://localhost:5000/student/download-module/61dfb738d12d11bbc992e324
->>>>>>> 17ed1ec120cd678939c17bbe50179dcd8a139d9f
+GET https://flamboyant-lichterman-5c5bcb.netlify.app/api/api/admin/login/CARNgBdf62dPnaEWPi6DgmLeRg53
 Content-Type: application/json
