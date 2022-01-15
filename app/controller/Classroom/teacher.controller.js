@@ -433,6 +433,7 @@ exports.deleteStudent = (req, res) => {
 
 exports.getClassroomModules = (req, res) =>{
     const classCode = req.params.class_code
+    var finalValue = []
 
     Classroom.findOne({class_code: classCode}).populate("module").exec((err, result) =>{
         if(err){
@@ -440,7 +441,21 @@ exports.getClassroomModules = (req, res) =>{
         }
         else{
             if(result != null){
-                return res.json(result.module)
+                result.module.map(result => {
+                    finalValue.push({
+                        _id: result._id,
+                        module_file: {
+                            filename: result.module_file.filename,
+                            mimetype: result.module_file.mimetype
+                        },
+                        module_name: result.module_name,
+                        quiz_link: result.quiz_link,
+                        finished: result.finished
+                    })
+
+                })
+
+                return res.json(finalValue)
             }else{
                 return res.json("Error")
             }

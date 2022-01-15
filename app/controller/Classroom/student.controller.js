@@ -100,8 +100,51 @@ exports.getClassrooms = (req, res) =>{
 
 }
 
+exports.unEnrol = (req, res) => {
+    const studentId = req.body["student_id"]
+    const classroomId = req.body["classroom_id"]
+    var studentEnrolledId = ""
+
+    Student.updateOne({_id: studentId}, {$pull: {classroom: classroomId}}, (err, result) =>{
+        if(err){
+            console.log(err)
+        }
+        else{
+            StudentEnrolled.findOne({students: studentId}, (err, result) => {
+                if(err){
+                    console.log(err)
+                }
+                else{
+                    if(result != null){
+                        studentEnrolledId = result._id
+        
+                        StudentEnrolled.deleteOne({students: studentId}, (err, result) =>{
+                            if(err){
+                                console.log(err)
+                            }
+                            else{
+                            }
+                        })
+        
+                        Classroom.updateOne({_id: classroomId}, {$pull: {student: studentEnrolledId}}, (err, result) =>{
+                            if(err){
+                                console.log(err)
+                            }
+                            else{
+                                res.json("Unenrol")
+                            }
+                        })
+                    }
+                }
+            })
+       
+        }
+    })
+}
+
 exports.getClassroomModules = (req, res) =>{
     const classCode = req.params.class_code
+    var finalValue = []
 
     Classroom.findOne({class_code: classCode}).populate("module").exec((err, result) =>{
         if(err){
@@ -109,7 +152,21 @@ exports.getClassroomModules = (req, res) =>{
         }
         else{
             if(result != null){
-                return res.json(result.module)
+                result.module.map(result => {
+                    finalValue.push({
+                        _id: result._id,
+                        module_file: {
+                            filename: result.module_file.filename,
+                            mimetype: result.module_file.mimetype
+                        },
+                        module_name: result.module_name,
+                        quiz_link: result.quiz_link,
+                        finished: result.finished
+                    })
+
+                })
+
+                return res.json(finalValue)
             }else{
                 return res.json("Error")
             }
@@ -153,4 +210,17 @@ exports.downloadModule = (req, res) => {
         }
     })
 
+}
+
+exports.getClassroomStudents = (req, res) =>{
+    const classCode = req.params.class_code
+
+    Classroom.findOne({class_code: classCode}).populate("student").exec((err, result) =>{
+        if(err){
+            console.log(err)
+        }
+        else{
+            res.json(result.student)
+        }
+    })
 }
