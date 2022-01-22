@@ -29,6 +29,7 @@ exports.joinClassroom = (req, res) => {
                     else{
                         if(result.classroom.indexOf(classroomId) == -1){
                             const studentEnrolledData = new StudentEnrolled({_id: studentEnrolledId,
+                                classroom_id: classroomId,
                                 student_name: studentName, 
                                 students: studentId})
             
@@ -102,48 +103,81 @@ exports.getClassrooms = (req, res) =>{
 
 exports.unEnrol = (req, res) => {
     const studentId = req.body["student_id"]
-    const classroomId = req.body["classroom_id"]
+    const classCode = req.body["class_code"]
+    var classroomId = ""
     var studentEnrolledId = ""
+    var moduleFinish = []
 
-    Student.updateOne({_id: studentId}, {$pull: {classroom: classroomId}}, (err, result) =>{
+    Classroom.findOne({class_code: classCode}, (err, result) =>{
         if(err){
-            console.log(err)
+            return res.json("Error")
         }
         else{
-            StudentEnrolled.findOne({students: studentId}, (err, result) => {
-                if(err){
-                    console.log(err)
-                }
-                else{
-                    if(result != null){
-                        studentEnrolledId = result._id
-        
-                        StudentEnrolled.deleteOne({students: studentId}, (err, result) =>{
-                            if(err){
-                                console.log(err)
-                            }
-                            else{
-                            }
-                        })
-        
-                        Classroom.updateOne({_id: classroomId}, {$pull: {student: studentEnrolledId}}, (err, result) =>{
-                            if(err){
-                                console.log(err)
-                            }
-                            else{
-                                res.json("Unenrol")
-                            }
-                        })
+            if(result != null){
+                classroomId = result._id
+
+                Student.updateOne({_id: studentId}, {$pull: {classroom: classroomId.toString()}}, (err, result) =>{
+                    if(err){
+                        console.log(err)
                     }
-                }
-            })
-       
+                    else{
+                        StudentEnrolled.findOne({classroom_id: classroomId, students: studentId}, (err, result) => {
+                            if(err){
+                                console.log(err)
+                            }
+                            else{
+                                if(result != null){
+                                    studentEnrolledId = result._id
+                                    moduleFinish = result.module_finish
+            
+                                    moduleFinish.map(id => {
+                                        Module.updateOne({_id: id}, {$pull: {finished: studentEnrolledId.toString()}}, (err, result) =>{
+                                            if(err){
+                                                console.log(err)
+                                            }
+                                            else{
+            
+                                            }
+                                        })
+            
+                                    })
+                    
+                                    StudentEnrolled.deleteOne({_id: studentEnrolledId}, (err, result) =>{
+                                        if(err){
+                                            console.log(err)
+                                        }
+                                        else{
+                                        }
+                                    })
+                    
+                                    Classroom.updateOne({_id: classroomId}, {$pull: {student: studentEnrolledId}}, (err, result) =>{
+                                        if(err){
+                                            console.log(err)
+                                        }
+                                        else{
+                                            res.json("Unenrol")
+                                        }
+                                    })
+                                }
+                            }
+                        })
+                   
+                    }
+                })
+
+            }else{
+                return res.json("Error")
+            }
         }
     })
 }
 
 exports.getClassroomModules = (req, res) =>{
     const classCode = req.params.class_code
+    const studentId = req.params.student_id
+    var classroomId = ""
+    var module = []
+    var moduleFinish = []
     var finalValue = []
 
     Classroom.findOne({class_code: classCode}).populate("module").exec((err, result) =>{
@@ -152,21 +186,76 @@ exports.getClassroomModules = (req, res) =>{
         }
         else{
             if(result != null){
-                result.module.map(result => {
-                    finalValue.push({
-                        _id: result._id,
-                        module_file: {
-                            filename: result.module_file.filename,
-                            mimetype: result.module_file.mimetype
-                        },
-                        module_name: result.module_name,
-                        quiz_link: result.quiz_link,
-                        finished: result.finished
-                    })
+                classroomId = result._id
+                module = result.module
 
+                StudentEnrolled.findOne({classroom_id: classroomId, students: studentId}, (err, result) => {
+                    if(err){
+                        return res.json("Error")
+                    }
+                    else{
+                        if(result != null){
+                            moduleFinish = result.module_finish
+
+                            module.map((result, i) => {
+                                if(moduleFinish.indexOf(result._id) != -1){
+                                    finalValue.push({
+                                        _id: result._id,
+                                        module_file: {
+                                            filename: result.module_file.filename
+                                        },
+                                        module_name: result.module_name,
+                                        quiz_link: result.quiz_link,
+                                        finish: true,
+                                        disabled: false
+                                    })
+                                }
+                                else if(i != 0){
+                                    if(finalValue[i - 1].finish == true){
+                                        finalValue.push({
+                                            _id: result._id,
+                                            module_file: {
+                                                filename: result.module_file.filename
+                                            },
+                                            module_name: result.module_name,
+                                            quiz_link: result.quiz_link,
+                                            finish: false,
+                                            disabled: false
+                                        })
+                                    }
+                                    else{
+                                        finalValue.push({
+                                            _id: result._id,
+                                            module_file: {
+                                                filename: result.module_file.filename
+                                            },
+                                            module_name: result.module_name,
+                                            quiz_link: result.quiz_link,
+                                            finish: false,
+                                            disabled: true
+                                        })
+                                    }
+                                }
+                                else if(i == 0){
+                                    finalValue.push({
+                                        _id: result._id,
+                                        module_file: {
+                                            filename: result.module_file.filename
+                                        },
+                                        module_name: result.module_name,
+                                        quiz_link: result.quiz_link,
+                                        finish: false,
+                                        disabled: false
+                                    })
+                                }
+                               
+                            })
+
+                            return res.json(finalValue)
+                        }
+                    }
+                    
                 })
-
-                return res.json(finalValue)
             }else{
                 return res.json("Error")
             }
@@ -212,15 +301,148 @@ exports.downloadModule = (req, res) => {
 
 }
 
+exports.moduleFinish = (req, res) => {
+    const studentId = req.body["student_id"]
+    const classCode = req.body["class_code"]
+    const moduleId = req.body["module_id"]
+    var studentEnrolledId = ""
+    var classroomId = ""
+
+    Classroom.findOne({class_code: classCode}, (err, result) =>{
+        if(err){
+            return res.json("Error")
+        }
+        else{
+            if(result != null){
+                classroomId = result._id
+
+                StudentEnrolled.findOne({classroom_id: classroomId, students: studentId}, (err, result) =>{
+                    if(err){
+                        return res.json("Error")
+                    }
+                    else{
+                        if(result != null){
+                            studentEnrolledId = result._id
+
+                            StudentEnrolled.updateOne({_id: studentEnrolledId}, {$push: {module_finish: [moduleId]}}, (err, result) =>{
+                                if(err){
+                                    console.log(err)
+                                }
+                                else{
+                                }
+                            })
+
+                            Module.updateOne({_id: moduleId}, {$push: {finished: [studentEnrolledId]}}, (err, result) =>{
+                                if(err){
+                                    console.log(err)
+                                }
+                                else{
+                                    res.json("Module Finish")
+                                }
+                            })
+                            
+                        }else{
+                            return res.json("Error")
+                        }
+                    }
+                })
+                
+            }else{
+                return res.json("Error")
+            }
+        }
+    })
+}
+
+exports.moduleUnFinish = (req, res) => {
+    const studentId = req.body["student_id"]
+    const classCode = req.body["class_code"]
+    const moduleId = req.body["module_id"]
+    var studentEnrolledId = ""
+    var classroomId = ""
+
+    Classroom.findOne({class_code: classCode}, (err, result) =>{
+        if(err){
+            return res.json("Error")
+        }
+        else{
+            if(result != null){
+                classroomId = result._id
+
+                StudentEnrolled.findOne({classroom_id: classroomId, students: studentId}, (err, result) =>{
+                    if(err){
+                        return res.json("Error")
+                    }
+                    else{
+                        if(result != null){
+                            studentEnrolledId = result._id
+
+                            StudentEnrolled.updateOne({_id: studentEnrolledId}, {$pull: {module_finish: moduleId}}, (err, result) =>{
+                                if(err){
+                                    console.log(err)
+                                }
+                                else{
+                             
+                                }
+                            })
+
+                            Module.updateOne({_id: moduleId}, {$pull: {finished: studentEnrolledId.toString()}}, (err, result) =>{
+                                if(err){
+                                    console.log(err)
+                                }
+                                else{
+                                    res.json("Module UnFinish")
+
+                                }
+                            })
+                        }else{
+                            return res.json("Error")
+                        }
+                    }
+                })
+                
+            }else{
+                return res.json("Error")
+            }
+        }
+    })
+}
+
+exports.getClassroomTeacherFullname = (req, res) =>{
+    const classCode = req.params.class_code
+
+    Classroom.findOne({class_code: classCode}, (err, result) =>{
+        if(err){
+            console.log(err)
+        }
+        else{
+            if(result != null){
+                res.json(result.teacher_name)
+            }
+        }
+    })
+}
+
 exports.getClassroomStudents = (req, res) =>{
     const classCode = req.params.class_code
+    var finalValue = []
 
     Classroom.findOne({class_code: classCode}).populate("student").exec((err, result) =>{
         if(err){
             console.log(err)
         }
         else{
-            res.json(result.student)
+            if(result != null){
+                result.student.map((result, i) => {
+                    finalValue.push({
+                        _id: i,
+                        student_name: result.student_name
+                    }
+                    )
+                })
+
+                res.json(finalValue)
+            }
         }
     })
 }

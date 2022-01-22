@@ -10,7 +10,12 @@ module.exports = (mongoose) => {
       },
       module_name: { type: String, required: true },
       quiz_link : { type: String, required: true },
-      finished: {type: Number, default: 0}
+      finished: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "student_enrolled",
+        },
+      ]
     },
     { timestamps: true }
   );

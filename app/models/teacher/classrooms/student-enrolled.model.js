@@ -2,8 +2,12 @@ module.exports = (mongoose) => {
   var StudentSchema = mongoose.Schema(
     {
       _id: { type: mongoose.Schema.Types.ObjectId },
+      classroom_id: { type: mongoose.Schema.Types.ObjectId },
+      module_finish: [{ 
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "modules"
+      }],
       student_name: { type: String, required: true },
-
       students: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "students",
