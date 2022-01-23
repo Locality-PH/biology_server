@@ -1,10 +1,10 @@
 module.exports = (mongoose) => {
     var questionSchema = mongoose.Schema({
         // { question_id: { type: mongoose.Schema.Types.ObjectId} },
-        string: {type: String },
-        type: {type: String },
-        answer: {type: [String] },
-        option: {type: [String] },
+        string: { type: String },
+        type: { type: String },
+        answer: { type: [String] },
+        option: { type: [String] },
     })
 
     var QuizSchema = mongoose.Schema(
@@ -12,19 +12,28 @@ module.exports = (mongoose) => {
             _id: { type: mongoose.Schema.Types.ObjectId },
             name: { type: String },
             description: { type: String },
-            question: {type: [{
-                // { question_id: { type: mongoose.Schema.Types.ObjectId} },
-                string: {type: String },
-                type: {type: String },
-                answer: {type: [String] },
-                option: {type: Array}
+            question: {
+                type: [{
+                    // { question_id: { type: mongoose.Schema.Types.ObjectId} },
+                    string: { type: String },
+                    type: { type: String },
+                    answer: { type: [String] },
+                    option: { type: Array }
 
-                // {type: [{
-                //     value: {type: String},
-                //     isAnswer: {type: Boolean},
-                // }], required: false },
-            }]},
+                    // {type: [{
+                    //     value: {type: String},
+                    //     isAnswer: {type: Boolean},
+                    // }], required: false },
+                }]
+            },
+            quiz_link: {
+                type: String,
+                minlength: 6,
+                maxlength: 10,
+                unique: true,
+            },
         },
+
         { timestamps: true }
     );
 
@@ -32,6 +41,16 @@ module.exports = (mongoose) => {
         const { __v, _id, ...object } = this.toObject();
         object.quiz_id = _id;
         return object;
+    });
+
+    QuizSchema.pre("save", async function (next) {
+        const randomInteger = (min, max) => {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        };
+        this.quiz_link = Math.random()
+            .toString(36)
+            .substr(2, randomInteger(6, 10));
+        next();
     });
 
     const Quiz = mongoose.model("quizs", QuizSchema);

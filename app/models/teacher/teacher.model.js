@@ -9,6 +9,12 @@ module.exports = (mongoose) => {
           ref: "classrooms",
         },
       ],
+      quiz: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "quizs",
+        },
+      ],
     },
     { timestamps: true }
   );
