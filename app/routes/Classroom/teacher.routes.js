@@ -38,6 +38,10 @@ module.exports = (app) => {
     teacherController.getClassroomStudents
   );
   router.post("/delete-student", teacherController.deleteStudent);
+  router.get(
+    "/get-student-enrolled-data/:student_enrolled_id",
+    teacherController.getStudentEnrolledData
+  );
 
   router.get(
     "/get-classroom-modules/:class_code",
@@ -47,6 +51,11 @@ module.exports = (app) => {
   router.get("/get-module/:module_id", teacherController.getModule);
   router.get("/download-module/:module_id", teacherController.downloadModule);
   router.post("/delete-module", teacherController.deleteModule);
+
+  router.get("/finished-students/:module_id", teacherController.finishedStudents);
+  router.get("/unfinished-students/:module_id/:class_code", teacherController.unfinishedStudents);
+
+  router.post("/delete-all-classrooms", teacherController.deleteAllClassrooms)
 
   app.use("/api/teacher", router);
 };
