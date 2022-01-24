@@ -8,6 +8,114 @@ const StudentEnrolled = db.student_enrolled
 var mongoose = require("mongoose");
 const e = require("express");
 
+exports.teacherDataCount = (req, res) =>{
+    const teacherId = req.params.teacher_id
+
+    var classroomsCount = 0
+    var modulesCount = 0
+    var quizsCount = 0
+    var studentsCount = 0
+
+    Teacher.findOne({ _id: teacherId }).populate("classroom").exec((err, result) => {
+        if (err) {
+            return res.json("Error")
+        }
+        else {
+            if(result != null){
+                classroomsCount = result.classroom.length
+                quizsCount = result.quiz.length
+
+                result.classroom.map(result => {
+                    modulesCount = modulesCount + result.module.length
+                    studentsCount = studentsCount + result.student.length
+                })
+                
+                return res.json({
+                    classrooms_count: classroomsCount,
+                    modules_count: modulesCount,
+                    quizs_count: quizsCount,
+                    students_count: studentsCount
+                })
+            }
+            
+        }
+    })
+
+}
+
+exports.latestJoinedStudents = (req, res) => {
+    const teacherId = req.params.teacher_id
+    var latestStudentEnrolled = []
+    var finalValue = []
+    var limit = 5
+
+    Teacher.findOne({ _id: teacherId }, (err, result) => {
+        if (err) {
+            return res.json("Error")
+        }
+        else {
+            if(result != null){
+                var classroom = result.classroom
+
+                StudentEnrolled.find().sort({createdAt: -1}).exec((err, result) => {
+                    if(err){
+                        return res.json("Error")
+                    }
+                    else{
+                        if(result != null){
+                            result.map(result => {
+                                if(classroom.indexOf(result.classroom_id) != -1){
+                                    latestStudentEnrolled.push(result._id)
+                                }
+                            })
+
+                            if(latestStudentEnrolled.length == 0){
+                                return res.json(finalValue)
+                            }
+                            
+                            latestStudentEnrolled.map((id, i) => {
+                                if(i < limit){
+                                    StudentEnrolled.findOne({_id: id}, (err, result) => {
+                                        if(err){
+                                            console.log(err)
+                                        }
+                                        else{
+                                            var date = new Date(result.createdAt)
+                                           
+                                            finalValue.push({
+                                                _id: i,
+                                                student_name: result.student_name,
+                                                joined_date: date.toDateString(),
+                                                joined_time: date.toLocaleTimeString()
+                                            })
+
+                                            Classroom.findOne({_id: result.classroom_id}, (err, result) => {
+                                                if(err){
+                                                    console.log(err)
+                                                }else{
+                                                    if(result != null){
+                                                        finalValue[i].classroom_name = result.name
+
+                                                        if(i == limit || latestStudentEnrolled.length == i + 1){
+                                                            return res.json(finalValue)
+                                                        }
+                                                    }
+
+                                                }
+                                            })
+                                        }
+                                    })
+                                }
+                               
+                            })
+                        }
+                    }
+                })
+            }
+        }
+    })
+}
+
 exports.createClassroom = (req, res) => {
     var moduleFinalVal = []
     const reqValues = JSON.parse(req.body.values)

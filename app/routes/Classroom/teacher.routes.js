@@ -2,6 +2,9 @@ module.exports = (app) => {
   const teacherController = require("../../controller/Classroom/teacher.controller");
   var router = require("express").Router();
 
+  router.get("/get-teacher-data-count/:teacher_id", teacherController.teacherDataCount)
+  router.get("/get-latest-joined-students/:teacher_id", teacherController.latestJoinedStudents)
+
   router.post("/create-classroom", teacherController.createClassroom);
   router.get(
     "/get-teacher-fullname/:teacher_id",
