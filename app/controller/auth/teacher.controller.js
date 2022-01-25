@@ -9,11 +9,10 @@ exports.updateTeacher = async (req, res) => {
     const newVals = req.body.values
 
     try {
-        Teacher.findByIdAndUpdate(
-            teacherID,
+        Account.findByIdAndUpdate(
+            userID,
             {
-                first_name: newVals.first_name,
-                last_name: newVals.last_name,
+                full_name: newVals.full_name,
             }, (err, result) => {
                 if (err) {
                     console.log(err)
@@ -25,23 +24,6 @@ exports.updateTeacher = async (req, res) => {
     } catch (error) {
         console.log(error)
     }
-
-    // try {
-    //     Account.findByIdAndUpdate(
-    //         userID,
-    //         {
-    //             email: newVals.email,
-    //         }, (err, result) => {
-    //             if (err) {
-    //                 console.log(err)
-    //             } else {
-    //                 res.json(result)
-    //             }
-    //         }
-    //     )
-    // } catch (error) {
-    //     console.log(error)
-    // }
 };
 
 exports.getTeacher = (req, res) => {
