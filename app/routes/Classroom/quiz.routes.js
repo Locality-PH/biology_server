@@ -5,7 +5,8 @@ module.exports = (app) => {
   router.post("/create-quiz", quizController.createQuiz);
   router.put("/update", quizController.updateQuiz);
   router.post("/get/:Qid", quizController.getQuiz)
-  router.post("/get/code/:quiz_code", quizController.getQuizByCode)
+  router.post("/get/code/:quiz_code", quizController.getTeacherQuizByCode)
+  router.post("/student/get/code/:quiz_code", quizController.getStudentQuizByCode)
   router.post("/get-all/:tid", quizController.getAllQuiz)
   router.delete("/delete", quizController.deleteQuiz)
   

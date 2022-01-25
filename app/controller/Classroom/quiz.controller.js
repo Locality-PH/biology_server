@@ -1,6 +1,7 @@
 const db = require("../../models");
 const Account = db.account;
 const Classroom = db.classroom;
+const Student = db.student;
 const Teacher = db.teacher;
 const Quiz = db.quiz;
 var mongoose = require("mongoose");
@@ -47,7 +48,7 @@ exports.getQuiz = async (req, res) => {
 
 };
 
-exports.getQuizByCode = async (req, res) => {
+exports.getTeacherQuizByCode = async (req, res) => {
     var quiz_code = req.params.quiz_code
     var tid = req.body.tid
     var teacher = await Teacher.findById(tid).populate("quiz");
@@ -74,6 +75,44 @@ exports.getQuizByCode = async (req, res) => {
     } else {
         res.json("failed")
     }
+
+};
+
+exports.getStudentQuizByCode = async (req, res) => {
+    var quiz_code = req.params.quiz_code
+    var sid = req.body.sid
+    var cc = req.body.class_code
+    let isStudentValid = false
+
+    var student = await Student.findById(sid).populate("classroom");
+
+    student.classroom.map((classroom) => {
+        if (classroom.class_code == cc) {
+            isStudentValid = true
+        }
+    })
+
+    console.log("Connected")
+    console.log(req.body)
+    console.log(student)
+    console.log(isStudentValid)
+
+    if (isStudentValid) {
+        try {
+            Quiz.findOne({ quiz_link: quiz_code }, (err, result) => {
+                if (err) {
+                    res.json(err);
+                } else {
+                    res.json(result);
+                }
+            })
+        } catch (error) {
+            console.log(error)
+        }
+    } else {
+        res.json("failed")
+    }
+
 
 };
 
