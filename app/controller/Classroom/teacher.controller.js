@@ -8,6 +8,60 @@ const StudentEnrolled = db.student_enrolled
 var mongoose = require("mongoose");
 const e = require("express");
 
+exports.teacherDataCount = (req, res) =>{
+    const teacherId = req.params.teacher_id
+
+    var classroomsCount = 0
+    var modulesCount = 0
+    var quizsCount = 0
+    var studentsCount = 0
+
+    Teacher.findOne({ _id: teacherId }).populate("classroom").exec((err, result) => {
+        if (err) {
+            return res.json("Error")
+        }
+        else {
+            if(result != null){
+                classroomsCount = result.classroom.length
+                quizsCount = result.quiz.length
+
+                result.classroom.map(result => {
+                    modulesCount = modulesCount + result.module.length
+                    studentsCount = studentsCount + result.student.length
+                })
+                
+                return res.json({
+                    classrooms_count: classroomsCount,
+                    modules_count: modulesCount,
+                    quizs_count: quizsCount,
+                    students_count: studentsCount
+                })
+            }
+            
+        }
+    })
+
+}
+
+exports.latestJoinedStudents = (req, res) => {
+    const teacherId = req.params.teacher_id
+    var latestStudentEnrolled = []
+    var finalValue = []
+    var limit = 5
+
+    Teacher.find({_id: teacherId}).populate({path: "classroom", populate: [{
+        path: "student"
+    }]}).exec((err, result) => {
+        if(err){
+            return res.json("Error")
+        }else{
+            console.log(result)
+        }
+    })
+
+    res.json("Latest Joined Student")
+}
+
 exports.createClassroom = (req, res) => {
     var moduleFinalVal = []
     const reqValues = JSON.parse(req.body.values)
@@ -517,6 +571,7 @@ exports.getStudentEnrolledData = (req, res) => {
                     finalValue.push({
                         _id: i,
                         module_name: result.module_name,
+                        finished_at: "Aug 4 test date",
                         quiz_score: 100
                     })
 
@@ -689,6 +744,7 @@ exports.finishedStudents = (req, res) => {
         else{
             if(result != null){
                 var quizLink = result.quiz_link
+                var moduleName = result.module_name
 
                 result.finished.map((result, i) => {
                     var studentId = result.students
@@ -696,11 +752,12 @@ exports.finishedStudents = (req, res) => {
                     finalValue.push({
                         _id: i,
                         student_name: result.student_name,
+                        finished_at: "Aug 4 test date",
                         quiz_score: 100
                     })
                 })
 
-                return res.json(finalValue)
+                return res.json({finished_student: finalValue, module_name: moduleName})
 
             }else{
                 return res.json([])
