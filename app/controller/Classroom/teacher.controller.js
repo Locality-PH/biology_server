@@ -5,6 +5,8 @@ const Teacher = db.teacher;
 const Module = db.modules;
 const Student = db.student
 const StudentEnrolled = db.student_enrolled
+const Quiz = db.quiz
+const Scoreboard = db.scoreboard
 var mongoose = require("mongoose");
 const e = require("express");
 
@@ -45,21 +47,57 @@ exports.teacherDataCount = (req, res) =>{
 
 exports.latestJoinedStudents = (req, res) => {
     const teacherId = req.params.teacher_id
-    var latestStudentEnrolled = []
     var finalValue = []
     var limit = 5
 
-    Teacher.find({_id: teacherId}).populate({path: "classroom", populate: [{
-        path: "student"
-    }]}).exec((err, result) => {
-        if(err){
+    Teacher.findOne({ _id: teacherId }, (err, result) => {
+        if (err) {
             return res.json("Error")
-        }else{
-            console.log(result)
+        }
+        else {
+            if(result != null){
+                var classroom = result.classroom
+
+                StudentEnrolled.find({classroom_id: {$in: classroom}}).sort({createdAt: -1}).limit(limit).exec((err, result) => {
+                    if(err){
+                        return res.json("Error")
+                    }
+                    else{
+                        if(result != null){
+                            var studentEnrolled = result
+
+                            studentEnrolled.map((enrolled, i) => {
+
+                                Classroom.findOne({_id: enrolled.classroom_id}, (err, result) => {
+                                    if(err){
+                                        console.log(err)
+                                    }else{
+                                        if(result != null){
+                                            var date = new Date(enrolled.createdAt)
+
+                                            finalValue.push({
+                                                _id: i,
+                                                student_name: enrolled.student_name,
+                                                classroom_name: result.name,
+                                                joined_date: date.toDateString(),
+                                                joined_time: date.toLocaleTimeString()
+                                            })
+                                            
+                                            if(studentEnrolled.length == i + 1){
+                                                return res.json(finalValue)
+                                            }
+                                        }
+                                    }
+                                })
+
+                            })
+                        }
+
+                    }
+                })
+            }
         }
     })
-
-    res.json("Latest Joined Student")
 }
 
 exports.createClassroom = (req, res) => {
@@ -559,6 +597,7 @@ exports.deleteStudent = (req, res) => {
 
 exports.getStudentEnrolledData = (req, res) => {
     const studentEnrolledId = req.params.student_enrolled_id
+    var studentId = ""
     var finalValue = []
 
     StudentEnrolled.findOne({_id: studentEnrolledId}).populate("module_finish").exec((err, result) =>{
@@ -567,19 +606,75 @@ exports.getStudentEnrolledData = (req, res) => {
         }
         else{
             if(result != null){
-                result.module_finish.map((result, i) => {
-                    finalValue.push({
-                        _id: i,
-                        module_name: result.module_name,
-                        finished_at: "Aug 4 test date",
-                        quiz_score: 100
+                studentId = result.students
+                var moduleFinished = result.module_finish
+
+                if(moduleFinished.length == 0){
+                    return res.json(finalValue)
+                }
+
+                moduleFinished.map((finished, i) => {
+                    var quizLink = finished.quiz_link
+
+                    Quiz.findOne({quiz_link: quizLink}, (err, result) => {
+                        if(err){
+                            console.log(err)
+                        }else{
+                            if(result != null){
+                                var quizId = result._id
+    
+                                Scoreboard.findOne({student: studentId, quiz: quizId}, (err, result) => {
+                                    if(err){
+                                        console.log(err)
+                                    }
+                                    else{
+                                        if(result != null){
+                                            var date = new Date(result.createdAt)
+
+                                            finalValue.push({
+                                                _id: i,
+                                                module_name: finished.module_name,
+                                                finished_at: date.toDateString() + ", " + date.toLocaleTimeString(),
+                                                quiz_score: result.score + "/" + result.max_score
+                                            })
+
+                                          
+                                        }else{
+                                            finalValue.push({
+                                                _id: i,
+                                                module_name: finished.module_name,
+                                                finished_at: "None",
+                                                quiz_score: "None"
+                                            })
+                                        }
+
+                                        if(moduleFinished.length == i + 1){
+                                            return res.json(finalValue)
+                                        }
+                                    }
+                                })
+                            }else{
+                                finalValue.push({
+                                    _id: i,
+                                    module_name: finished.module_name,
+                                    finished_at: "None",
+                                    quiz_score: "None"
+                                })
+
+                                if(moduleFinished.length == i + 1){
+                                    return res.json(finalValue)
+                                }
+
+                            }
+    
+                        }
                     })
+
 
                 })
 
-                return res.json(finalValue)
             }else{
-                return res.json("Error")
+                return res.json(finalValue)
             }
         }
     })
@@ -743,26 +838,74 @@ exports.finishedStudents = (req, res) => {
         }
         else{
             if(result != null){
+                var studentFinished = result.finished
                 var quizLink = result.quiz_link
                 var moduleName = result.module_name
+                var quizId = ""
 
-                result.finished.map((result, i) => {
-                    var studentId = result.students
+                if(studentFinished.length == 0){
+                    return res.json({finished_student: finalValue, module_name: moduleName})
+                }
 
-                    finalValue.push({
-                        _id: i,
-                        student_name: result.student_name,
-                        finished_at: "Aug 4 test date",
-                        quiz_score: 100
-                    })
-                })
+                Quiz.findOne({quiz_link: quizLink}, (err, result) => {
+                    if(err){
+                        console.log(err)
+                    }else{
+                        if(result != null){
+                            quizId = result._id
 
-                return res.json({finished_student: finalValue, module_name: moduleName})
-
-            }else{
-                return res.json([])
-            }
+                            studentFinished.map((finished, i) => {
+                                var studentId = finished.students
             
+                                Scoreboard.findOne({student: studentId, quiz: quizId}, (err, result) => {
+                                    if(err){
+                                        console.log(err)
+                                    }
+                                    else{
+                                        if(result != null){
+                                            var date = new Date(result.createdAt)
+
+                                            finalValue.push({
+                                                _id: i,
+                                                student_name: finished.student_name,
+                                                finished_at: date.toDateString() + ", " + date.toLocaleTimeString(),
+                                                quiz_score: result.score + "/" + result.max_score
+                                            })
+
+                                        }else{
+                                            finalValue.push({
+                                                _id: i,
+                                                student_name: finished.student_name,
+                                                finished_at: "None",
+                                                quiz_score: "None"
+                                            })
+                                        }
+
+                                        if(studentFinished.length == i + 1){
+                                            return res.json({finished_student: finalValue, module_name: moduleName})
+                                        }
+                                    }
+                                })
+                            })
+                        }else{
+                            studentFinished.map((finished, i) => {
+                                finalValue.push({
+                                    _id: i,
+                                    student_name: finished.student_name,
+                                    finished_at: "None",
+                                    quiz_score: "None"
+                                })
+
+                                if(studentFinished.length == i + 1){
+                                    return res.json({finished_student: finalValue, module_name: moduleName})
+                                }
+                            })
+
+                        }
+
+                    }
+                })
+            }
         }
     })
 }
