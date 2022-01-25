@@ -49,71 +49,17 @@ exports.latestJoinedStudents = (req, res) => {
     var finalValue = []
     var limit = 5
 
-    Teacher.findOne({ _id: teacherId }, (err, result) => {
-        if (err) {
+    Teacher.find({_id: teacherId}).populate({path: "classroom", populate: [{
+        path: "student"
+    }]}).exec((err, result) => {
+        if(err){
             return res.json("Error")
-        }
-        else {
-            if(result != null){
-                var classroom = result.classroom
-
-                StudentEnrolled.find().sort({createdAt: -1}).exec((err, result) => {
-                    if(err){
-                        return res.json("Error")
-                    }
-                    else{
-                        if(result != null){
-                            result.map(result => {
-                                if(classroom.indexOf(result.classroom_id) != -1){
-                                    latestStudentEnrolled.push(result._id)
-                                }
-                            })
-
-                            if(latestStudentEnrolled.length == 0){
-                                return res.json(finalValue)
-                            }
-                            
-                            latestStudentEnrolled.map((id, i) => {
-                                if(i < limit){
-                                    StudentEnrolled.findOne({_id: id}, (err, result) => {
-                                        if(err){
-                                            console.log(err)
-                                        }
-                                        else{
-                                            var date = new Date(result.createdAt)
-                                           
-                                            finalValue.push({
-                                                _id: i,
-                                                student_name: result.student_name,
-                                                joined_date: date.toDateString(),
-                                                joined_time: date.toLocaleTimeString()
-                                            })
-
-                                            Classroom.findOne({_id: result.classroom_id}, (err, result) => {
-                                                if(err){
-                                                    console.log(err)
-                                                }else{
-                                                    if(result != null){
-                                                        finalValue[i].classroom_name = result.name
-
-                                                        if(i == limit || latestStudentEnrolled.length == i + 1){
-                                                            return res.json(finalValue)
-                                                        }
-                                                    }
-
-                                                }
-                                            })
-                                        }
-                                    })
-                                }
-                               
-                            })
-                        }
-                    }
-                })
-            }
+        }else{
+            console.log(result)
         }
     })
+
+    res.json("Latest Joined Student")
 }
 
 exports.createClassroom = (req, res) => {
@@ -625,6 +571,7 @@ exports.getStudentEnrolledData = (req, res) => {
                     finalValue.push({
                         _id: i,
                         module_name: result.module_name,
+                        finished_at: "Aug 4 test date",
                         quiz_score: 100
                     })
 
@@ -797,6 +744,7 @@ exports.finishedStudents = (req, res) => {
         else{
             if(result != null){
                 var quizLink = result.quiz_link
+                var moduleName = result.module_name
 
                 result.finished.map((result, i) => {
                     var studentId = result.students
@@ -804,11 +752,12 @@ exports.finishedStudents = (req, res) => {
                     finalValue.push({
                         _id: i,
                         student_name: result.student_name,
+                        finished_at: "Aug 4 test date",
                         quiz_score: 100
                     })
                 })
 
-                return res.json(finalValue)
+                return res.json({finished_student: finalValue, module_name: moduleName})
 
             }else{
                 return res.json([])
