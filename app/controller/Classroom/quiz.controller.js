@@ -37,7 +37,8 @@ exports.getQuiz = async (req, res) => {
     try {
         Quiz.findById(Qid, (err, result) => {
             if (err) {
-                res.json(err);
+                console.log(err)
+                res.json("error");
             } else {
                 res.json(result);
             }
@@ -64,7 +65,8 @@ exports.getTeacherQuizByCode = async (req, res) => {
         try {
             Quiz.findOne({ quiz_link: quiz_code }, (err, result) => {
                 if (err) {
-                    res.json(err);
+                    console.log(err)
+                    res.json("error");
                 } else {
                     res.json(result);
                 }
@@ -92,16 +94,12 @@ exports.getStudentQuizByCode = async (req, res) => {
         }
     })
 
-    console.log("Connected")
-    console.log(req.body)
-    console.log(student)
-    console.log(isStudentValid)
-
     if (isStudentValid) {
         try {
             Quiz.findOne({ quiz_link: quiz_code }, (err, result) => {
                 if (err) {
-                    res.json(err);
+                    console.log(err)
+                    res.json("error");
                 } else {
                     res.json(result);
                 }

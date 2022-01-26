@@ -4,6 +4,8 @@ module.exports = (mongoose) => {
       _id: { type: mongoose.Schema.Types.ObjectId },
       score: { type: Number },
       max_score: { type: Number },
+      score_list: [Boolean],
+      answer_list: { type: Object },
       quiz:
       {
         type: mongoose.Schema.Types.ObjectId,
