@@ -40,7 +40,7 @@ exports.validateStudent = async (req, res) => {
     console.log(quiz)
     console.log(qid)
 
-    Scoreboard.findOne({question: qid, student: sid}, (err, result) => {
+    Scoreboard.findOne({quiz: qid, student: sid}, (err, result) => {
         if (err) {
             console.log(err)
             res.json("error");
