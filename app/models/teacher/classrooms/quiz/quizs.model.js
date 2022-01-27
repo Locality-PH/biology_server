@@ -17,13 +17,8 @@ module.exports = (mongoose) => {
                     // { question_id: { type: mongoose.Schema.Types.ObjectId} },
                     string: { type: String },
                     type: { type: String },
-                    answer: { type: [String] },
+                    answer: { type: Array },
                     option: { type: Array }
-
-                    // {type: [{
-                    //     value: {type: String},
-                    //     isAnswer: {type: Boolean},
-                    // }], required: false },
                 }]
             },
             quiz_link: {

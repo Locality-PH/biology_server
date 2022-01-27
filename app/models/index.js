@@ -13,6 +13,7 @@ db.account = require("./auth/accounts.model.js")(mongoose);
 db.teacher = require("./teacher/teacher.model.js")(mongoose);
 db.classroom = require("./teacher/classroom.model.js")(mongoose);
 db.quiz = require("./teacher/classrooms/quiz/quizs.model")(mongoose);
+db.scoreboard = require("./teacher/scoreboard/scoreboard.js")(mongoose);
 db.modules = require("./teacher/classrooms/modules.model.js")(mongoose);
 db.student_enrolled = require("./teacher/classrooms/student-enrolled.model.js")(
   mongoose

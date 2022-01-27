@@ -68,6 +68,66 @@ exports.joinClassroom = (req, res) => {
 
 };
 
+exports.getStudentAccount = (req, res) => {
+    const uid = req.params.uid;
+    console.log(uid);
+  
+    try {
+      Account.findById(uid, (err, result) => {
+        if (err) {
+          res.json(err);
+        } else {
+          console.log(result);
+          res.json(result);
+        }
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+exports.updateStudent = async (req, res) => {
+    const uid = req.body.uid
+    const sid = req.body.sid
+    const newVals = req.body.values
+
+    try {
+        Student.findOne({_id: sid}, (err, result) => {
+            if(err){
+                console.log(err)
+            }
+            else{
+                if(result != null){
+
+                    StudentEnrolled.updateMany({students: {$in: sid}}, {$set: {student_name: newVals.full_name}}, (err, result) => {
+                        if(err){
+                            console.log(err)
+                        }else{
+                            Account.findByIdAndUpdate(
+                                uid,
+                                {
+                                    full_name: newVals.full_name,
+                                }, (err, result) => {
+                                    if (err) {
+                                        console.log(err)
+                                    } else {
+                                        res.json(result)
+                                    }
+                                }
+                            )
+
+                        }
+                    })
+
+                }
+            }
+        })
+
+    } catch (error) {
+        console.log(error)
+    }
+};
+
 exports.getStudentFullName = (req, res) => {
     const studentId = req.params.student_id
 

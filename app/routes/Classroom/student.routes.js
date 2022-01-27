@@ -2,6 +2,9 @@ module.exports = (app) => {
   const studentController = require("../../controller/Classroom/student.controller");
   var router = require("express").Router();
 
+  router.put("/update", studentController.updateStudent);
+  router.get("/get/:uid", studentController.getStudentAccount);
+
   router.post("/join-classroom", studentController.joinClassroom);
   router.get(
     "/get-student-fullname/:student_id",
