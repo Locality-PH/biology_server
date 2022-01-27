@@ -3,7 +3,7 @@ module.exports = (app) => {
   var router = require("express").Router();
 
   router.post("/create-quiz", quizController.createQuiz);
-  router.put("/update", quizController.updateQuiz);
+  router.post("/update", quizController.updateQuiz);
   router.post("/get/:Qid", quizController.getQuiz)
   router.post("/get/code/:quiz_code", quizController.getTeacherQuizByCode)
   router.post("/student/get/code/:quiz_code", quizController.getStudentQuizByCode)
