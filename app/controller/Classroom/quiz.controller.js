@@ -1,6 +1,8 @@
 const db = require("../../models");
 const Account = db.account;
 const Classroom = db.classroom;
+const Module = db.modules;
+const StudentEnrolled = db.student_enrolled
 const Student = db.student;
 const Teacher = db.teacher;
 const Quiz = db.quiz;
@@ -84,15 +86,19 @@ exports.getStudentQuizByCode = async (req, res) => {
     var quiz_code = req.params.quiz_code
     var sid = req.body.sid
     var cc = req.body.class_code
+    var mid = req.body.mid
     let isStudentValid = false
 
     var student = await Student.findById(sid).populate("classroom");
+    var classroom = await Classroom.findOne({ class_code: cc }) 
+    var cid = classroom._id
 
-    student.classroom.map((classroom) => {
-        if (classroom.class_code == cc) {
-            isStudentValid = true
-        }
-    })
+    var isEnrolled = await StudentEnrolled.findOne({classroom_id: cid, students: sid})
+    var isModuleValid = await Module.findOne({_id: mid, quiz_link: quiz_code})
+
+    if (isEnrolled != null && isModuleValid != null) {
+        isStudentValid = true
+    }
 
     if (isStudentValid) {
         try {
@@ -109,6 +115,7 @@ exports.getStudentQuizByCode = async (req, res) => {
         }
     } else {
         res.json("failed")
+        console.log("Failed")
     }
 
 
@@ -134,9 +141,9 @@ exports.updateQuiz = async (req, res) => {
     var newQuizData = req.body.newQuiz
     var tid = req.body.tid
 
-    console.log(req.body)
-    console.log(qid)
-    console.log(newQuizData)
+    // console.log(req.body)
+    // console.log(qid)
+    // console.log(newQuizData)
 
     try {
         Quiz.updateOne({ _id: qid }, newQuizData, (err, result) => {

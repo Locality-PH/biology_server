@@ -24,7 +24,7 @@ exports.createScoreboard = async (req, res) => {
 
     const newScoreboard = new Scoreboard(newScoreboardData)
 
-    console.log(newScoreboardData)
+    // console.log(newScoreboardData)
     await newScoreboard.save()
 
     res.json(newScoreboardData)
@@ -37,8 +37,8 @@ exports.validateStudent = async (req, res) => {
     var quiz = await Quiz.findOne({quiz_link: qc});
     var qid = quiz._id
 
-    console.log(quiz)
-    console.log(qid)
+    // console.log(quiz)
+    // console.log(qid)
 
     Scoreboard.findOne({quiz: qid, student: sid}, (err, result) => {
         if (err) {
@@ -46,7 +46,7 @@ exports.validateStudent = async (req, res) => {
             res.json("error");
         } else {
             res.json(result);
-            console.log(result)
+            // console.log(result)
         }
 
     });
