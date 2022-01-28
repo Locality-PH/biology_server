@@ -143,14 +143,14 @@ exports.updateQuiz = async (req, res) => {
 
     // console.log(req.body)
     // console.log(qid)
-    // console.log(newQuizData)
+    console.log(newQuizData)
 
     try {
         Quiz.updateOne({ _id: qid }, newQuizData, (err, result) => {
             if (err) {
                 console.log(err)
             } else {
-                // console.log(result)
+                console.log(result)
                 res.json("Update Success")
             }
         })
