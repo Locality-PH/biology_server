@@ -66,6 +66,10 @@ exports.latestJoinedStudents = (req, res) => {
                         if(result != null){
                             var studentEnrolled = result
 
+                            if(studentEnrolled.length == 0){
+                                return res.json(finalValue);
+                            }
+
                             studentEnrolled.map((enrolled, i) => {
 
                                 Classroom.findOne({_id: enrolled.classroom_id}, (err, result) => {

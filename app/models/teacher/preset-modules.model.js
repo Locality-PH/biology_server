@@ -3,21 +3,27 @@ module.exports = (mongoose) => {
   var PresetSchema = mongoose.Schema(
     {
       _id: { type: mongoose.Schema.Types.ObjectId },
-      module_file: {
+      name: {type: String},
+      files: {
+        name : {type: String},
         file: { type: Buffer, required: true },
-        filename: { type: String, required: true },
-        mimetype: { type: String, required: true },
+        filename: { type: String, required: true }
       },
-      module_name: { type: String, required: true },
-      module_path_uri: { type: String, required: true },
+      lesson: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "lessons",
+        }
+      ],
+      whole_content: {
+        file: { type: Buffer, required: true },
+        filename: { type: String, required: true }
+      },
+      classwork_code : { type: String}
     },
     { timestamps: true }
   );
-  PresetSchema.method("toJSON", function () {
-    const { __v, _id, ...object } = this.toObject();
-    object.teacher_id = _id;
-    return object;
-  });
+ 
   const PresetsModule = mongoose.model("presetmodules", PresetSchema);
   return PresetsModule;
 };
