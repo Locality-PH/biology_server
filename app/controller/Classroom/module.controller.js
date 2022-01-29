@@ -118,6 +118,26 @@ exports.getMyModules = async (req, res) => {
     
 }
 
+exports.deleteMyModule = async (req, res) => {
+    const teacherId = req.body.teacher_id
+    const myModuleId = req.body._id
+
+    try{
+        const myModule = await MyModule.findOne({_id: myModuleId})
+        const myModuleLesson = myModule.lesson
+
+        await Lesson.deleteMany({_id: {$in: myModuleLesson}})
+        await Module.deleteMany({module_id: myModuleId});
+        await MyModule.deleteOne({_id: myModuleId})
+        await Teacher.updateOne({ _id: teacherId }, { $pull: { module: myModuleId } })
+
+        return res.json("Deleted")
+
+    }catch(e){
+        return res.json("Error")
+    }
+}
+
 exports.createPresetModule = async (req, res) => {
     const presetModuleId = new mongoose.Types.ObjectId();
 
@@ -219,4 +239,22 @@ exports.getPresetModules = async (req, res) => {
         }
     })
 
+}
+
+exports.deletePresetModule = async (req, res) => {
+    const presetModuleId = req.body._id
+
+    try{
+        const presetModule = await PresetModule.findOne({_id: presetModuleId})
+        const presetModuleLesson = presetModule.lesson
+
+        await Lesson.deleteMany({_id: {$in: presetModuleLesson}})
+        await Module.deleteMany({module_id: presetModuleId});
+        await PresetModule.deleteOne({_id: presetModuleId})
+
+        return res.json("Deleted")
+
+    }catch(e){
+        return res.json("Error")
+    }
 }

@@ -3,6 +3,8 @@ const Account = db.account;
 const Classroom = db.classroom;
 const Teacher = db.teacher;
 const Module = db.modules;
+const MyModule = db.mymodules
+const PresetModule = db.presetmodules
 const Student = db.student
 const StudentEnrolled = db.student_enrolled
 const Quiz = db.quiz
@@ -104,60 +106,39 @@ exports.latestJoinedStudents = (req, res) => {
     })
 }
 
-exports.createClassroom = (req, res) => {
-    var moduleFinalVal = []
-    const reqValues = JSON.parse(req.body.values)
-    var reqFiles = ""
-
-    try {
-        reqFiles = req.files.file
-    }
-    catch (e) {
-        reqFiles = ""
-    }
-
+exports.createClassroom = async (req, res) => {
+    const teacherId = req.body.teacher_id
     var classroomId = new mongoose.Types.ObjectId();
+
+    var moduleFinalVal = []
     const moduleIds = []
-    const teacherId = reqValues.teacher_id
+    const modules = req.body.modules
 
-    if (Array.isArray(reqFiles)) {
-        reqFiles.map((result, i) => {
-            const module_id = new mongoose.Types.ObjectId();
-
-            moduleFinalVal.push({
-                _id: module_id,
-                module_file: { file: result.data, filename: result.name, mimetype: result.mimetype },
-                module_name: reqValues.modules_name[i],
-                quiz_link: reqValues.quizs_link[i]
-            })
-
-            moduleIds.push(module_id)
-        })
-    } else if (reqFiles != "") {
+    modules.map(result => {
         const module_id = new mongoose.Types.ObjectId();
 
         moduleFinalVal.push({
             _id: module_id,
-            module_file: { file: reqFiles.data, filename: reqFiles.name, mimetype: reqFiles.mimetype },
-            module_name: reqValues.modules_name[0],
-            quiz_link: reqValues.quizs_link[0]
+            type: result.type,
+            module_id: result._id
         })
 
         moduleIds.push(module_id)
-    }
+    })
 
     try {
-        Module.insertMany(moduleFinalVal);
+        await Module.insertMany(moduleFinalVal);
 
         const classroomData = new Classroom({
             _id: classroomId,
-            name: reqValues.name,
-            teacher_name: reqValues.teacher_name,
-            description: reqValues.description,
-            section_name: reqValues.section_name, module: moduleIds
+            name: req.body.name,
+            teacher_name: req.body.teacher_name,
+            description: req.body.description,
+            section_name: req.body.section_name, 
+            module: moduleIds
         })
 
-        classroomData.save()
+        await classroomData.save()
 
         Teacher.updateOne({ _id: teacherId }, { $push: { classroom: [classroomData] } }, (err, result) => {
             if (err) {
@@ -684,34 +665,52 @@ exports.getStudentEnrolledData = (req, res) => {
     })
 }
 
-exports.getClassroomModules = (req, res) =>{
+exports.getClassroomModules = async (req, res) =>{
     const classCode = req.params.class_code
     var finalValue = []
 
-    Classroom.findOne({ class_code: classCode }).populate("module").exec((err, result) => {
-        if (err) {
-            return res.json("Error")
-        }
-        else {
-            if (result != null) {
-                result.module.map(result => {
-                    finalValue.push({
-                        _id: result._id,
-                        module_file: {
-                            filename: result.module_file.filename
-                        },
-                        module_name: result.module_name,
-                        finished: result.finished.length
-                    })
+    const classroom = await Classroom.findOne({class_code: classCode}).populate("module")
+    const module = classroom.module
 
-                })
+    module.map(async (result, i)=> {
+        if(result.type == "MyModule"){
+            const myModule = await MyModule.findOne({_id: result.module_id})
 
-                return res.json(finalValue)
-            } else {
-                return res.json("Error")
+            finalValue.push({
+                _id: result._id,
+                module_id: myModule._id,
+                type: "MyModule",
+                module_name: myModule.name,
+                classwork_code: myModule.classwork_code,
+                lesson_count: myModule.lesson.length,
+                finished: result.finished.length
             }
+            )
+        }else if(result.type == "PresetModule"){
+            const presetModule = await PresetModule.findOne({_id: result.module_id})
+
+            finalValue.push({
+                _id: result._id,
+                module_id: presetModule._id,
+                type: "PresetModule",
+                module_name: presetModule.name,
+                classwork_code: presetModule.classwork_code,
+                lesson_count: presetModule.lesson.length,
+                finished: result.finished.length
+            }
+            )
         }
+
+        if(module.length == i + 1){
+            return res.json(finalValue)
+        }
+
     })
+
+    if(module.length == 0){
+        return res.json(finalValue)
+    }
+
 }
 
 exports.viewModule = (req, res) => {
