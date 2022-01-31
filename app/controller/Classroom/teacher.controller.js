@@ -3,8 +3,7 @@ const Account = db.account;
 const Classroom = db.classroom;
 const Teacher = db.teacher;
 const Module = db.modules;
-const MyModule = db.mymodules
-const PresetModule = db.presetmodules
+const AllModule = db.allmodules;
 const Student = db.student
 const StudentEnrolled = db.student_enrolled
 const Quiz = db.quiz
@@ -27,10 +26,10 @@ exports.teacherDataCount = (req, res) =>{
         else {
             if(result != null){
                 classroomsCount = result.classroom.length
+                modulesCount = result.module.length
                 quizsCount = result.quiz.length
 
                 result.classroom.map(result => {
-                    modulesCount = modulesCount + result.module.length
                     studentsCount = studentsCount + result.student.length
                 })
                 
@@ -119,7 +118,6 @@ exports.createClassroom = async (req, res) => {
 
         moduleFinalVal.push({
             _id: module_id,
-            type: result.type,
             module_id: result._id
         })
 
@@ -139,15 +137,10 @@ exports.createClassroom = async (req, res) => {
         })
 
         await classroomData.save()
+        await Teacher.updateOne({_id: teacherId }, {$push: { classroom: [classroomData] }})
 
-        Teacher.updateOne({ _id: teacherId }, { $push: { classroom: [classroomData] } }, (err, result) => {
-            if (err) {
-                console.log(err)
-            }
-            else {
-                return res.json(classroomId.toString())
-            }
-        })
+        return res.json(classroomId.toString())
+
     } catch (e) {
         console.log(e);
     }
@@ -669,46 +662,52 @@ exports.getClassroomModules = async (req, res) =>{
     const classCode = req.params.class_code
     var finalValue = []
 
-    const classroom = await Classroom.findOne({class_code: classCode}).populate("module")
-    const module = classroom.module
+    try{
+        const classroom = await Classroom.findOne({class_code: classCode}).populate("module")
+        const module = classroom.module
 
-    module.map(async (result, i)=> {
-        if(result.type == "MyModule"){
-            const myModule = await MyModule.findOne({_id: result.module_id})
+        var allModuleIds = []
+        var moduleIds = []
+        var finished = []
 
-            finalValue.push({
-                _id: result._id,
-                module_id: myModule._id,
-                type: "MyModule",
-                module_name: myModule.name,
-                classwork_code: myModule.classwork_code,
-                lesson_count: myModule.lesson.length,
-                finished: result.finished.length
+        module.map(result => {
+            moduleIds.push(result._id)
+            allModuleIds.push(result.module_id)
+            finished.push(result.finished.length)
+        })
+
+        const allModule = await AllModule.find({_id: {$in: allModuleIds}}).sort({$natural: 1})
+        var tempValue = []
+
+        allModule.map((result, i)=> {
+            tempValue.push({
+            module_id: result._id,
+            type: result.type,
+            module_name: result.name,
+            classwork_code: result.classwork_code,
+            lesson_count: result.lesson.length
+        }
+        )
+
+        })
+
+        for(var i = 0; i < allModuleIds.length; i++){
+            for(var j = 0; j < tempValue.length; j++){
+                if(allModuleIds[i] == tempValue[j].module_id.toString()){
+                    tempValue[j]._id = moduleIds[i]
+                    tempValue[j].finished = finished[i]
+
+                    finalValue.push(tempValue[j])
+                }
+
             }
-            )
-        }else if(result.type == "PresetModule"){
-            const presetModule = await PresetModule.findOne({_id: result.module_id})
-
-            finalValue.push({
-                _id: result._id,
-                module_id: presetModule._id,
-                type: "PresetModule",
-                module_name: presetModule.name,
-                classwork_code: presetModule.classwork_code,
-                lesson_count: presetModule.lesson.length,
-                finished: result.finished.length
-            }
-            )
         }
 
-        if(module.length == i + 1){
-            return res.json(finalValue)
-        }
-
-    })
-
-    if(module.length == 0){
         return res.json(finalValue)
+
+    }catch(e){
+        return res.json(finalValue)
+
     }
 
 }

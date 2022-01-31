@@ -12,7 +12,7 @@ module.exports = (mongoose) => {
       module: [
         {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "mymodules",
+          ref: "allmodules",
         },
       ],
       quiz: [

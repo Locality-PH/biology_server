@@ -20,8 +20,7 @@ db.student_enrolled = require("./teacher/classrooms/student-enrolled.model.js")(
 );
 
 //Modules
-db.mymodules = require("./teacher/my-modules.model")(mongoose)
-db.presetmodules = require("./teacher/preset-modules.model.js")(mongoose);
+db.allmodules = require("./teacher/all-modules.model")(mongoose)
 db.lessons = require("./teacher/lesson.model")(mongoose)
 //Students
 db.student = require("./student/student.model.js")(mongoose);

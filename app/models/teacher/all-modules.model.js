@@ -1,12 +1,13 @@
 module.exports = (mongoose) => {
-    var MyModuleSchema = mongoose.Schema(
+    var AllModulesSchema = mongoose.Schema(
       {
         _id: { type: mongoose.Schema.Types.ObjectId },
         name: {type: String},
+        topic_name : {type: String},
+        type: { type: String},
         files: {
-          name : {type: String},
-          file: { type: Buffer, required: true },
-          filename: { type: String, required: true }
+          file: { type: Buffer },
+          filename: { type: String }
         },
         lesson: [
           {
@@ -23,7 +24,7 @@ module.exports = (mongoose) => {
       { timestamps: true }
     );
   
-    const MyModule = mongoose.model("mymodules", MyModuleSchema);
-    return MyModule;
+    const AllModules = mongoose.model("allmodules", AllModulesSchema);
+    return AllModules;
   };
   
