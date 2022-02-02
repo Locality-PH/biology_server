@@ -4,6 +4,7 @@ const Classroom = db.classroom;
 const Module = db.modules;
 const AllModule = db.allmodules;
 const Lesson = db.lessons;
+const ModuleLesson = db.modulelessons
 var mongoose = require("mongoose");
 const e = require("express");
 
@@ -157,6 +158,7 @@ exports.deleteMyModule = async (req, res) => {
         const myModule = await AllModule.findOne({_id: myModuleId})
         const myModuleLesson = myModule.lesson
 
+        await ModuleLesson.deleteMany({lesson_id: {$in: myModuleLesson}})
         await Lesson.deleteMany({_id: {$in: myModuleLesson}})
         const modules = await Module.find({module_id: myModuleId})
         var moduleIds = []
@@ -164,6 +166,7 @@ exports.deleteMyModule = async (req, res) => {
             moduleIds.push(result._id)
         })
         await Classroom.updateMany({}, {$pull:{module: {$in: moduleIds}}})
+        // Delete Student Enrolled Finished Module
         await Module.deleteMany({module_id: myModuleId});
         await AllModule.deleteOne({_id: myModuleId})
         await Teacher.updateOne({ _id: teacherId }, { $pull: { module: myModuleId } })
@@ -425,6 +428,7 @@ exports.deletePresetModule = async (req, res) => {
         const presetModule = await AllModule.findOne({_id: presetModuleId})
         const presetModuleLesson = presetModule.lesson
 
+        await ModuleLesson.deleteMany({lesson_id: {$in: presetModuleLesson}})
         await Lesson.deleteMany({_id: {$in: presetModuleLesson}})
         const modules = await Module.find({module_id: presetModuleId})
         var moduleIds = []
@@ -432,6 +436,7 @@ exports.deletePresetModule = async (req, res) => {
             moduleIds.push(result._id)
         })
         await Classroom.updateMany({}, {$pull:{module: {$in: moduleIds}}})
+        // Delete Student Enrolled Finished Module
         await Module.deleteMany({module_id: presetModuleId});
         await AllModule.deleteOne({_id: presetModuleId})
 

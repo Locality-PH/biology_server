@@ -9,6 +9,12 @@ module.exports = (mongoose) => {
           type: mongoose.Schema.Types.ObjectId,
           ref: "student_enrolled",
         },
+      ],
+      lessons: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "modulelessons",
+        },
       ]
     },
     { timestamps: true }

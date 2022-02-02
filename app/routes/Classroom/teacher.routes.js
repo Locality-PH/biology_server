@@ -17,20 +17,14 @@ module.exports = (app) => {
 
   router.get("/get-classrooms/:teacher_id", teacherController.getClassrooms);
 
+  router.get("/get-my-modules/:teacher_id/:class_code", teacherController.getMyModules);
+  router.get("/get-preset-modules/:class_code", teacherController.getPresetModules);
   router.get(
     "/get-classroom-data/:class_code",
     teacherController.getClassroomData
   );
-  router.get(
-    "/get-classroom-modules-array/:class_code",
-    teacherController.getClassroomModulesArray
-  );
   router.post(
-    "/update-initial-modules/:class_code",
-    teacherController.updateInitialModules
-  );
-  router.post(
-    "/update-classroom/:class_code",
+    "/update-classroom",
     teacherController.updateClassroom
   );
 
@@ -42,23 +36,17 @@ module.exports = (app) => {
   );
   router.post("/delete-student", teacherController.deleteStudent);
   router.get(
-    "/get-student-enrolled-data/:student_enrolled_id",
-    teacherController.getStudentEnrolledData
+    "/get-student-module-finished/:student_enrolled_id",
+    teacherController.getStudentModuleFinished
   );
 
   router.get(
     "/get-classroom-modules/:class_code",
     teacherController.getClassroomModules
   );
-  router.get("/view-module/:module_id", teacherController.viewModule);
-  router.get("/get-module/:module_id", teacherController.getModule);
-  router.get("/download-module/:module_id", teacherController.downloadModule);
   router.post("/delete-module", teacherController.deleteModule);
 
   router.get("/finished-students/:module_id", teacherController.finishedStudents);
-  router.get("/unfinished-students/:module_id/:class_code", teacherController.unfinishedStudents);
-
-  router.post("/delete-all-classrooms", teacherController.deleteAllClassrooms)
 
   app.use("/api/teacher", router);
 };
