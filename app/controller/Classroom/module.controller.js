@@ -571,3 +571,43 @@ exports.updatePresetModule = async (req, res) => {
     }
 
 }
+
+exports.getModuleLessons = async (req, res) => {
+    const moduleId = req.params.module_id
+    var finalValue = []
+    
+    try {
+        const module = await Module.findOne({_id: moduleId}).populate("lessons")
+        const moduleLessons = module.lessons
+        var lessonIds = []
+        var moduleLessonsIds = []
+        var moduleLessonsFinished = []
+
+        if(moduleLessons.length == 0){
+            return res.json(finalValue)
+        }
+
+        moduleLessons.map(moduleLessons => {
+            lessonIds.push(moduleLessons.lesson_id)
+            moduleLessonsIds.push(moduleLessons._id)
+            moduleLessonsFinished.push(moduleLessons.finished.length)
+        })
+
+        const lesson = await Lesson.find({_id: {$in: lessonIds}})
+
+        lesson.map((lesson, i) => {
+            finalValue.push({
+                module_lesson_id: moduleLessonsIds[i],
+                lesson_name: lesson.name,
+                classwork_code: lesson.classwork_code,
+                finished: moduleLessonsFinished[i]
+            })
+        })
+
+        res.json(finalValue)
+        
+    } catch (error) {
+        res.json([])
+    }
+    
+}

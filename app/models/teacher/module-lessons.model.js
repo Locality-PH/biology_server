@@ -2,7 +2,11 @@ module.exports = (mongoose) => {
     var ModuleLessonSchema = mongoose.Schema(
       {
         _id: { type: mongoose.Schema.Types.ObjectId },
-        lesson_id: { type: mongoose.Schema.Types.ObjectId },
+        lesson_id: 
+          { 
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: "lessons"
+          },
         finished: [
           {
             type: mongoose.Schema.Types.ObjectId,

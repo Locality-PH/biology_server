@@ -14,6 +14,8 @@ module.exports = (app) => {
     router.get("/download-preset-module/:preset_module_id", moduleController.downloadPresetModule)
     router.post("/delete-preset-module", moduleController.deletePresetModule);
     router.post("/update-preset-module", moduleController.updatePresetModule)
+
+    router.get("/get-module-lessons/:module_id", moduleController.getModuleLessons);
   
     app.use("/api/module", router);
   };

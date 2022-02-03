@@ -3,6 +3,9 @@ const Account = db.account;
 const Classroom = db.classroom;
 const Teacher = db.teacher;
 const Module = db.modules;
+const AllModule = db.allmodules;
+const Lesson = db.lessons;
+const ModuleLesson = db.modulelessons
 const Student = db.student
 const StudentEnrolled = db.student_enrolled
 var mongoose = require("mongoose");
@@ -232,95 +235,70 @@ exports.unEnrol = (req, res) => {
     })
 }
 
-exports.getClassroomModules = (req, res) =>{
+exports.getClassroomModules = async(req, res) =>{
     const classCode = req.params.class_code
     const studentId = req.params.student_id
-    var classroomId = ""
-    var module = []
-    var moduleFinish = []
+
     var finalValue = []
 
-    Classroom.findOne({class_code: classCode}).populate("module").exec((err, result) =>{
-        if(err){
-            return res.json("Error")
-        }
-        else{
-            if(result != null){
-                classroomId = result._id
-                module = result.module
+    try {
+        const classroom = await Classroom.findOne({class_code: classCode}).populate(
+            {path: 'module',
+                populate: 
+                    {path: 'lessons', 
+                        populate: 
+                            {path: "lesson_id"}}})
 
-                StudentEnrolled.findOne({classroom_id: classroomId, students: studentId}, (err, result) => {
-                    if(err){
-                        return res.json("Error")
-                    }
-                    else{
-                        if(result != null){
-                            moduleFinish = result.module_finish
+        const module = classroom.module
 
-                            module.map((result, i) => {
-                                if(moduleFinish.indexOf(result._id) != -1){
-                                    finalValue.push({
-                                        _id: result._id,
-                                        module_file: {
-                                            filename: result.module_file.filename
-                                        },
-                                        module_name: result.module_name,
-                                        quiz_link: result.quiz_link,
-                                        finish: true,
-                                        disabled: false
-                                    })
-                                }
-                                else if(i != 0){
-                                    if(finalValue[i - 1].finish == true){
-                                        finalValue.push({
-                                            _id: result._id,
-                                            module_file: {
-                                                filename: result.module_file.filename
-                                            },
-                                            module_name: result.module_name,
-                                            quiz_link: result.quiz_link,
-                                            finish: false,
-                                            disabled: false
-                                        })
-                                    }
-                                    else{
-                                        finalValue.push({
-                                            _id: result._id,
-                                            module_file: {
-                                                filename: result.module_file.filename
-                                            },
-                                            module_name: result.module_name,
-                                            quiz_link: result.quiz_link,
-                                            finish: false,
-                                            disabled: true
-                                        })
-                                    }
-                                }
-                                else if(i == 0){
-                                    finalValue.push({
-                                        _id: result._id,
-                                        module_file: {
-                                            filename: result.module_file.filename
-                                        },
-                                        module_name: result.module_name,
-                                        quiz_link: result.quiz_link,
-                                        finish: false,
-                                        disabled: false
-                                    })
-                                }
-                               
-                            })
+        module.map((moduleData, moduleIndex) => {
+            const lessons = moduleData.lessons
 
-                            return res.json(finalValue)
-                        }
-                    }
-                    
+            finalValue.push({
+                module_id: moduleData._id,
+                disabled: false,
+                lessons: []
+            })
+
+            lessons.map((lessonsData, lessonsIndex) => {
+                finalValue[moduleIndex].lessons.push({
+                    module_lesson_id: lessonsData._id,
+                    lesson_name: lessonsData.lesson_id.name,
+                    classwork_code: lessonsData.lesson_id.classwork_code,
+                    disabled: false
                 })
-            }else{
-                return res.json("Error")
+
+            })
+        })
+
+        var allModuleIds = []
+        
+        module.map(module => {
+            allModuleIds.push(module.module_id)
+        })
+
+        const allModule = await AllModule.find({_id: {$in: allModuleIds}})
+
+        for(var i = 0; i < allModuleIds.length; i++){
+            for(j = 0; j < allModuleIds.length; j++){
+                if(allModule[j]._id.toString() == allModuleIds[i]){
+                    finalValue[i].name = allModule[j].name
+                    finalValue[i].topic_name = allModule[j].topic_name
+                    finalValue[i].classwork_code = allModule[j].classwork_code
+                    finalValue[i].downloadable_module = {
+                        filename: allModule[j].whole_content.filename,
+                    }
+                }
             }
         }
-    })
+
+        return res.json(finalValue)
+
+        
+    } catch (error) {
+        return res.json([])
+        
+    }
 }
 
 exports.getModule = (req, res) =>{
@@ -401,60 +379,6 @@ exports.moduleFinish = (req, res) => {
                                 }
                             })
                             
-                        }else{
-                            return res.json("Error")
-                        }
-                    }
-                })
-                
-            }else{
-                return res.json("Error")
-            }
-        }
-    })
-}
-
-exports.moduleUnFinish = (req, res) => {
-    const studentId = req.body["student_id"]
-    const classCode = req.body["class_code"]
-    const moduleId = req.body["module_id"]
-    var studentEnrolledId = ""
-    var classroomId = ""
-
-    Classroom.findOne({class_code: classCode}, (err, result) =>{
-        if(err){
-            return res.json("Error")
-        }
-        else{
-            if(result != null){
-                classroomId = result._id
-
-                StudentEnrolled.findOne({classroom_id: classroomId, students: studentId}, (err, result) =>{
-                    if(err){
-                        return res.json("Error")
-                    }
-                    else{
-                        if(result != null){
-                            studentEnrolledId = result._id
-
-                            StudentEnrolled.updateOne({_id: studentEnrolledId}, {$pull: {module_finish: moduleId}}, (err, result) =>{
-                                if(err){
-                                    console.log(err)
-                                }
-                                else{
-                             
-                                }
-                            })
-
-                            Module.updateOne({_id: moduleId}, {$pull: {finished: studentEnrolledId.toString()}}, (err, result) =>{
-                                if(err){
-                                    console.log(err)
-                                }
-                                else{
-                                    res.json("Module UnFinish")
-
-                                }
-                            })
                         }else{
                             return res.json("Error")
                         }
