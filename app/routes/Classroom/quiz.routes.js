@@ -10,5 +10,6 @@ module.exports = (app) => {
   router.post("/get-all/:tid", quizController.getAllQuiz)
   router.delete("/delete", quizController.deleteQuiz)
   
+  router.post("/upload/image", quizController.uploadImage)
   app.use("/api/quiz", router);
 };

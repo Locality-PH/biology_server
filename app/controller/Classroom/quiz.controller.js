@@ -90,11 +90,11 @@ exports.getStudentQuizByCode = async (req, res) => {
     let isStudentValid = false
 
     var student = await Student.findById(sid).populate("classroom");
-    var classroom = await Classroom.findOne({ class_code: cc }) 
+    var classroom = await Classroom.findOne({ class_code: cc })
     var cid = classroom._id
 
-    var isEnrolled = await StudentEnrolled.findOne({classroom_id: cid, students: sid})
-    var isModuleValid = await Module.findOne({_id: mid, quiz_link: quiz_code})
+    var isEnrolled = await StudentEnrolled.findOne({ classroom_id: cid, students: sid })
+    var isModuleValid = await Module.findOne({ _id: mid, quiz_link: quiz_code })
 
     if (isEnrolled != null && isModuleValid != null) {
         isStudentValid = true
@@ -137,16 +137,57 @@ exports.getAllQuiz = async (req, res) => {
 };
 
 exports.updateQuiz = async (req, res) => {
-    var qid = req.body.quiz_id;
-    var newQuizData = req.body.newQuiz
-    var tid = req.body.tid
+    console.log(req.files)
+    console.log(req.body)
 
-    // console.log(req.body)
-    // console.log(qid)
-    console.log(newQuizData)
+    const qin = (req.body.question_index)
+    const qid = (req.body.quiz_id)
+    const img_files = (req.files)
+
+    var newQuiz = JSON.parse(req.body.newQuiz)
+    var oldQuiz = await Quiz.findById(qid)
+
+    console.log(newQuiz)
+    console.log(typeof qin == "string")
+
+    if (typeof qin == "string") {
+        var tqin = JSON.parse(qin)
+        console.log(tqin)
+
+        if (tqin.isNewFile == false) {
+            var oq = oldQuiz.question
+            newQuiz.question[tqin.index].img = oq[tqin.index].img
+        }
+
+        else if (tqin.isNewFile == true) {
+            var img_file = img_files[`question${tqin.index + 1}_image`]
+            console.log(img_file)
+            newQuiz.question[tqin.index].img = { file: img_file.data, filename: img_file.name }
+        }
+    }
+
+    else if (Array.isArray(qin)) {
+        qin.map((qin, i) => {
+            var tqin = JSON.parse(qin)
+            
+            if (tqin.isNewFile == false) {
+                var oq = oldQuiz.question
+                newQuiz.question[tqin.index].img = oq[tqin.index].img
+            }
+    
+            else if (tqin.isNewFile == true) {
+                var img_file = img_files[`question${tqin.index + 1}_image`]
+
+                newQuiz.question[tqin.index]._id = new mongoose.Types.ObjectId()
+                newQuiz.question[tqin.index].img = { file: img_file.data, filename: img_file.name }
+            }
+        })
+    }
+
+    console.log(newQuiz)
 
     try {
-        Quiz.updateOne({ _id: qid }, newQuizData, (err, result) => {
+        Quiz.updateOne({ _id: qid }, newQuiz, (err, result) => {
             if (err) {
                 console.log(err)
             } else {
@@ -158,8 +199,7 @@ exports.updateQuiz = async (req, res) => {
         console.log(e);
     }
 
-
-};
+}
 
 exports.deleteQuiz = async (req, res) => {
 
@@ -186,4 +226,12 @@ exports.deleteQuiz = async (req, res) => {
 
 };
 
+exports.uploadImage = async (req, res) => {
 
+    console.log(req.files)
+    console.log(req.body)
+
+    console.log("test", req.files.question4_image)
+
+
+};

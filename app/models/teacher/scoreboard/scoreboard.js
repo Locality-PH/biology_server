@@ -6,6 +6,11 @@ module.exports = (mongoose) => {
       max_score: { type: Number },
       score_list: [Boolean],
       answer_list: { type: Object },
+      module:
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "modules",
+      },
       quiz:
       {
         type: mongoose.Schema.Types.ObjectId,

@@ -18,7 +18,11 @@ module.exports = (mongoose) => {
                     string: { type: String },
                     type: { type: String },
                     answer: { type: Array },
-                    option: { type: Array }
+                    option: { type: Array },
+                    img: {
+                        file: { type: Buffer },
+                        filename: { type: String },
+                    },
                 }]
             },
             quiz_link: {
