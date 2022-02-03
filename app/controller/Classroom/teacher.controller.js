@@ -3,6 +3,8 @@ const Account = db.account;
 const Classroom = db.classroom;
 const Teacher = db.teacher;
 const Module = db.modules;
+const AllModule = db.allmodules;
+const ModuleLesson = db.modulelessons
 const Student = db.student
 const StudentEnrolled = db.student_enrolled
 const Quiz = db.quiz
@@ -25,10 +27,10 @@ exports.teacherDataCount = (req, res) =>{
         else {
             if(result != null){
                 classroomsCount = result.classroom.length
+                modulesCount = result.module.length
                 quizsCount = result.quiz.length
 
                 result.classroom.map(result => {
-                    modulesCount = modulesCount + result.module.length
                     studentsCount = studentsCount + result.student.length
                 })
                 
@@ -45,124 +47,120 @@ exports.teacherDataCount = (req, res) =>{
 
 }
 
-exports.latestJoinedStudents = (req, res) => {
+exports.latestJoinedStudents = async(req, res) => {
     const teacherId = req.params.teacher_id
     var finalValue = []
     var limit = 5
 
-    Teacher.findOne({ _id: teacherId }, (err, result) => {
-        if (err) {
-            return res.json("Error")
-        }
-        else {
-            if(result != null){
-                var classroom = result.classroom
-
-                StudentEnrolled.find({classroom_id: {$in: classroom}}).sort({createdAt: -1}).limit(limit).exec((err, result) => {
-                    if(err){
-                        return res.json("Error")
-                    }
-                    else{
-                        if(result != null){
-                            var studentEnrolled = result
-
-                            studentEnrolled.map((enrolled, i) => {
-
-                                Classroom.findOne({_id: enrolled.classroom_id}, (err, result) => {
-                                    if(err){
-                                        console.log(err)
-                                    }else{
-                                        if(result != null){
-                                            var date = new Date(enrolled.createdAt)
-
-                                            finalValue.push({
-                                                _id: i,
-                                                student_name: enrolled.student_name,
-                                                classroom_name: result.name,
-                                                joined_date: date.toDateString(),
-                                                joined_time: date.toLocaleTimeString()
-                                            })
-                                            
-                                            if(studentEnrolled.length == i + 1){
-                                                return res.json(finalValue)
-                                            }
-                                        }
-                                    }
-                                })
-
-                            })
-                        }
-
-                    }
-                })
-            }
-        }
-    })
-}
-
-exports.createClassroom = (req, res) => {
-    var moduleFinalVal = []
-    const reqValues = JSON.parse(req.body.values)
-    var reqFiles = ""
-
     try {
-        reqFiles = req.files.file
-    }
-    catch (e) {
-        reqFiles = ""
-    }
+        const teacher = await Teacher.findOne({_id: teacherId})
+        const classroom = teacher.classroom
+        const studentEnrolled = await 
+        StudentEnrolled.find({classroom_id: {$in: classroom}}).sort({createdAt: -1}).limit(limit)
+        var classroomIds = []
 
-    var classroomId = new mongoose.Types.ObjectId();
-    const moduleIds = []
-    const teacherId = reqValues.teacher_id
+        if(studentEnrolled.length == 0){
+            return res.json(finalValue)
+        }
 
-    if (Array.isArray(reqFiles)) {
-        reqFiles.map((result, i) => {
-            const module_id = new mongoose.Types.ObjectId();
+        studentEnrolled.map(result => {
+            classroomIds.push(result.classroom_id)
+        })
 
-            moduleFinalVal.push({
-                _id: module_id,
-                module_file: { file: result.data, filename: result.name, mimetype: result.mimetype },
-                module_name: reqValues.modules_name[i],
-                quiz_link: reqValues.quizs_link[i]
+        const studentClassroom = await Classroom.find({_id: {$in: classroomIds}})
+
+        studentEnrolled.map((result, i )=> {
+            studentClassroom.filter(data => {
+                if(data._id.toString() == result.classroom_id.toString()){
+                    var date = new Date(result.createdAt)
+                    finalValue.push({
+                        _id: i,
+                        student_name: result.student_name,
+                        classroom_name: data.name,
+                        joined_date: date.toDateString(),
+                        joined_time: date.toLocaleTimeString()
+                    })
+
+                }
             })
 
-            moduleIds.push(module_id)
-        })
-    } else if (reqFiles != "") {
-        const module_id = new mongoose.Types.ObjectId();
-
-        moduleFinalVal.push({
-            _id: module_id,
-            module_file: { file: reqFiles.data, filename: reqFiles.name, mimetype: reqFiles.mimetype },
-            module_name: reqValues.modules_name[0],
-            quiz_link: reqValues.quizs_link[0]
+            if(studentEnrolled.length == i + 1){
+                return res.json(finalValue)
+            }
         })
 
-        moduleIds.push(module_id)
+    } catch (error) {
+        return res.json(finalValue)
     }
+    
+}
+
+exports.createClassroom = async (req, res) => {
+    const teacherId = req.body.teacher_id
+    var classroomId = new mongoose.Types.ObjectId();
+
+    var moduleFinalVal = []
+    const moduleIds = []
+    const modules = req.body.modules
 
     try {
-        Module.insertMany(moduleFinalVal);
+        var allModuleIds = []
+        var lessonFinalVal = []
+        
+        modules.map(modules => {
+            allModuleIds.push(modules._id)
+        })
+
+        const allModule = await AllModule.find({_id: {$in: allModuleIds}})
+        var allModuleLesson = []
+
+        for(var i = 0; i < allModuleIds.length; i++){
+            for(j = 0; j < allModuleIds.length; j++){
+                if(allModule[j]._id.toString() == allModuleIds[i]){
+                    allModuleLesson.push(allModule[j].lesson)
+
+                    var lessonIds = []
+
+                    allModuleLesson[i].map(lessonId => {
+                        const lesson_id = new mongoose.Types.ObjectId();
+                        lessonFinalVal.push({
+                            _id: lesson_id,
+                            lesson_id: lessonId
+                        })
+
+                        lessonIds.push(lesson_id)
+                    })
+
+                    const module_id = new mongoose.Types.ObjectId();
+
+                    moduleFinalVal.push({
+                        _id: module_id,
+                        module_id: allModuleIds[i],
+                        lessons: lessonIds
+                    })
+
+                    moduleIds.push(module_id)
+                }
+            }
+        }
+        
+        await ModuleLesson.insertMany(lessonFinalVal)
+        await Module.insertMany(moduleFinalVal);
 
         const classroomData = new Classroom({
             _id: classroomId,
-            name: reqValues.name,
-            teacher_name: reqValues.teacher_name,
-            description: reqValues.description,
-            section_name: reqValues.section_name, module: moduleIds
+            name: req.body.name,
+            teacher_name: req.body.teacher_name,
+            description: req.body.description,
+            section_name: req.body.section_name, 
+            module: moduleIds
         })
 
-        classroomData.save()
+        await classroomData.save()
+        await Teacher.updateOne({_id: teacherId }, {$push: { classroom: [classroomData] }})
 
-        Teacher.updateOne({ _id: teacherId }, { $push: { classroom: [classroomData] } }, (err, result) => {
-            if (err) {
-                console.log(err)
-            }
-            else {
-                return res.json(classroomId.toString())
-            }
-        })
+        return res.json(classroomId.toString())
+
     } catch (e) {
         console.log(e);
     }
@@ -187,22 +185,16 @@ exports.getTeacherFullName = (req, res) => {
 
 }
 
-exports.getClassroomCode = (req, res) => {
+exports.getClassroomCode = async(req, res) => {
     const classroomId = req.params.classroom_id
 
-    Classroom.findOne({ _id: classroomId }, (err, result) => {
-        if (err) {
-            console.log(err)
-        }
-        else {
-            if (result != null) {
-                res.json(result.class_code)
-            } else {
-                res.json("Error")
-            }
-
-        }
-    })
+    try {
+        const classroom = await Classroom.findOne({ _id: classroomId })
+        return res.json(classroom.class_code)
+        
+    } catch (error) {
+        return res.json("Error")
+    }
 }
 
 exports.getClassrooms = (req, res) => {
@@ -218,296 +210,268 @@ exports.getClassrooms = (req, res) => {
     })
 };
 
-exports.getClassroomData = (req, res) => {
+exports.getClassroomData = async(req, res) => {
     const classCode = req.params.class_code
+    var finalValue = {
+        name: "",
+        section_name: "",
+        description: "",
+        modules: [],
+        all_module_ids: []
+    }
 
-    Classroom.findOne({ class_code: classCode }).populate("module").exec((err, result) => {
-        if (err) {
-            return res.json("Error")
+    try{
+        const classroom = await Classroom.findOne({class_code: classCode}).populate("module")
+        finalValue.name = classroom.name
+        finalValue.section_name = classroom.section_name
+        finalValue.description = classroom.description
+        const module = classroom.module
+
+        var allModuleIds = []
+        var moduleIds = []
+
+        module.map(result => {
+            moduleIds.push(result._id)
+            allModuleIds.push(result.module_id)
+        })
+
+        finalValue.all_module_ids = allModuleIds
+
+        const allModule = await AllModule.find({_id: {$in: allModuleIds}}).sort({$natural: 1})
+        var tempValue = []
+
+        allModule.map((result, i)=> {
+            tempValue.push({
+            _id: result._id,
+            type: result.type,
+            topic: result.topic_name,
+            module_name: result.name,
+            lesson_count: result.lesson.length
         }
-        else {
-            if (result != null) {
-                return res.json(result)
-            } else {
-                return res.json("Error")
+        )
+
+        })
+
+        for(var i = 0; i < allModuleIds.length; i++){
+            for(var j = 0; j < tempValue.length; j++){
+                if(allModuleIds[i] == tempValue[j]._id.toString()){
+                    finalValue.modules.push(tempValue[j])
+                }
+
             }
         }
-    })
+
+        return res.json(finalValue)
+
+    }catch(e){
+        return res.json(finalValue)
+
+    }
+
 }
 
-exports.getClassroomModulesArray = (req, res) => {
+exports.getMyModules = async (req, res) => {
+    const teacherId = req.params.teacher_id
     const classCode = req.params.class_code
-
-    Classroom.findOne({ class_code: classCode }, (err, result) => {
-        if (err) {
-            return res.json("Error")
-        }
-        else {
-            if (result != null) {
-                return res.json(result.module)
-            } else {
-                return res.json("Error")
-            }
-        }
-    })
-}
-
-exports.updateInitialModules = (req, res) => {
-    const reqValues = JSON.parse(req.body.values)
-    var reqFiles = ""
+    var finalValue = []
 
     try {
-        reqFiles = req.files.file
+        const teacher = await Teacher.findOne({ _id: teacherId }).populate("module")
+        const module = teacher.module
+
+        const classroom = await Classroom.findOne({class_code: classCode}).populate("module")
+        const classroomModules = classroom.module
+
+        module.map(result => {
+            var checked = false
+
+            classroomModules.filter(data => {
+                if(data.module_id.toString() == result._id){
+                    checked = true
+                }
+            })
+
+            finalValue.push({
+                _id: result._id,
+                module_name: result.name,
+                topic: result.topic_name,
+                lesson_count: result.lesson.length,
+                classwork_code: result.classwork_code,
+                checked: checked
+            })
+        })
+
+        return res.json(finalValue)
+        
+    } catch (error) {
+        return res.json(finalValue)
     }
-    catch (e) {
-        reqFiles = ""
-    }
+}
 
-    // console.log(reqValues)
-    // console.log(reqFiles)
+exports.getPresetModules = async (req, res) => {
+    var finalValue = []
+    const classCode = req.params.class_code
 
-    reqValues.delete_initial_modules.map(moduleId => {
-        Classroom.updateOne({ class_code: reqValues.class_code }, { $pull: { module: moduleId } }, (err, result) => {
-            if (err) {
-                return res.json("Error")
-            }
-            else{
-                Module.findOne({_id: moduleId}, (err, result) => {
-                    if(err){
-                        return res.json("Error")
-                    }else{
-                        if(result != null){
-                            var finished = result.finished
+    try {
+        const allModule = await AllModule.find({type: "PresetModule"})
 
-                            finished.map(id => {
-                                StudentEnrolled.updateOne({_id: id}, {$pull: {module_finish: moduleId}}, (err, result) => {
-                                    if(err){
-                                        
-                                    }else{
+        const classroom = await Classroom.findOne({class_code: classCode}).populate("module")
+        const classroomModules = classroom.module
 
-                                    }
-                                })
+        allModule.map(result => {
+            var checked = false
 
-                            })
-
-                            Module.deleteOne({_id: moduleId}, (err, result) => {
-                                if(err){
-                                    return res.json("Error")
-                                }
-                                else{
-                                    // Deleted
-                                }
-                            })
-                        }
-                    }
-                })
-
+            classroomModules.filter(data => {
+                if(data.module_id.toString() == result._id){
+                    checked = true
+                }
+            })
             
-            }
-        })
-    })
+            finalValue.push({
+                _id: result._id,
+                module_name: result.name,
+                topic: result.topic_name,
+                lesson_count: result.lesson.length,
+                classwork_code: result.classwork_code,
+                checked: checked
+            })
 
-    if (Array.isArray(reqFiles)) {
-        reqValues.nfl_initial_modules_id.map((moduleId, i) => {
-            Module.updateOne({ _id: moduleId }, {
-                module_name: reqValues.nfl_initial_modules_name[i],
-                quiz_link: reqValues.nfl_initial_modules_link[i],
-                module_file: {
-                    file: reqFiles[i].data,
-                    filename: reqFiles[i].name,
-                    mimetype: reqFiles[i].mimetype
-                }
-            }, (err, result) => {
-                if (err) {
-                    return res.json("Error")
-                }
-                else {
-                    // Deleted
-                }
-            })
         })
-    } else if (reqFiles != "") {
-        reqValues.nfl_initial_modules_id.map((moduleId, i) => {
-            Module.updateOne({ _id: moduleId }, {
-                module_name: reqValues.nfl_initial_modules_name[i],
-                quiz_link: reqValues.nfl_initial_modules_link[i],
-                module_file: {
-                    file: reqFiles.data,
-                    filename: reqFiles.name,
-                    mimetype: reqFiles.mimetype
-                }
-            }, (err, result) => {
-                if (err) {
-                    return res.json("Error")
-                }
-                else {
-                    // Deleted
-                }
-            })
-        })
+
+        return res.json(finalValue)
+        
+    } catch (error) {
+        return res.json(finalValue)
+        
     }
-
-    reqValues.nl_initial_modules_id.map((moduleId, i) => {
-        Module.updateOne({ _id: moduleId }, {
-            module_name: reqValues.nl_initial_modules_name[i],
-            quiz_link: reqValues.nl_initial_modules_link[i]
-        }, (err, result) => {
-            if (err) {
-                return res.json("Error")
-            }
-            else {
-                // Deleted
-            }
-        })
-    })
 }
 
-exports.updateClassroom = (req, res) => {
-    var moduleFinalVal = []
-    const reqValues = JSON.parse(req.body.values)
-    var reqFiles = ""
+exports.updateClassroom = async(req, res) => {
+    const classCode = req.body.class_code
 
     try {
-        reqFiles = req.files.file
-    }
-    catch (e) {
-        reqFiles = ""
-    }
+        await Classroom.updateOne({class_code: classCode}, 
+            {name: req.body.name,
+            section_name: req.body.section_name,
+        description: req.body.description})
 
-    var classCode = req.params.class_code
-    const moduleIds = []
+        if(req.body.modules_is_editable == true){
+            const classroom = await Classroom.findOne({class_code: classCode})
+            const classroomModules = classroom.module
 
-    if (Array.isArray(reqFiles)) {
-        reqFiles.map((result, i) => {
-            const module_id = new mongoose.Types.ObjectId();
+            var lessonIds = []
 
-            moduleFinalVal.push({
-                _id: module_id,
-                module_file: { file: result.data, filename: result.name, mimetype: result.mimetype },
-                module_name: reqValues.modules_name[i],
-                quiz_link: reqValues.quizs_link[i]
+            const module = await Module.find({_id: {$in: classroomModules}})
+            await Module.deleteMany({_id: {$in : classroomModules}})
+            // Delete Student Enrolled Finished Module
+
+            module.map(module => {
+                lessonIds.push(...module.lessons)
+            })
+            
+            await ModuleLesson.deleteMany({_id: {$in: lessonIds}})
+
+            var moduleFinalVal = []
+            const moduleIds = []
+            const modules = req.body.modules
+
+            if(modules.length == 0){
+                await Classroom.updateOne({class_code: classCode}, {module: []})
+                return res.json("Updated")
+            }
+
+            var allModuleIds = []
+            var lessonFinalVal = []
+            
+            modules.map(modules => {
+                allModuleIds.push(modules._id)
             })
 
-            moduleIds.push(module_id)
-        })
-    } else if (reqFiles != "") {
-        const module_id = new mongoose.Types.ObjectId();
+            const allModule = await AllModule.find({_id: {$in: allModuleIds}})
+            var allModuleLesson = []
 
-        moduleFinalVal.push({
-            _id: module_id,
-            module_file: { file: reqFiles.data, filename: reqFiles.name, mimetype: reqFiles.mimetype },
-            module_name: reqValues.modules_name[0],
-            quiz_link: reqValues.quizs_link[0]
-        })
+            for(var i = 0; i < allModuleIds.length; i++){
+                for(j = 0; j < allModuleIds.length; j++){
+                    if(allModule[j]._id.toString() == allModuleIds[i]){
+                        allModuleLesson.push(allModule[j].lesson)
 
-        moduleIds.push(module_id)
-    }
+                        var lessonIds = []
 
-    try {
-        Module.insertMany(moduleFinalVal);
-        Classroom.updateOne({ class_code: classCode }, { $push: { module: moduleIds } }, (err, result) => {
-            if (err) {
-                console.log(err)
+                        allModuleLesson[i].map(lessonId => {
+                            const lesson_id = new mongoose.Types.ObjectId();
+                            lessonFinalVal.push({
+                                _id: lesson_id,
+                                lesson_id: lessonId
+                            })
+
+                            lessonIds.push(lesson_id)
+                        })
+
+                        const module_id = new mongoose.Types.ObjectId();
+
+                        moduleFinalVal.push({
+                            _id: module_id,
+                            module_id: allModuleIds[i],
+                            lessons: lessonIds
+                        })
+
+                        moduleIds.push(module_id)
+                    }
+                }
             }
-            else {
+            
+            await ModuleLesson.insertMany(lessonFinalVal)
+            await Module.insertMany(moduleFinalVal);
 
-            }
-        })
-    } catch (e) {
-        console.log(e);
+            await Classroom.updateOne({class_code: classCode}, {module: moduleIds})
+            return res.json("Updated")
+        }else{
+            return res.json("Updated")
+        }
+        
+    } catch (error) {
+        return res.json("Error")
     }
-
-    Classroom.updateMany({ class_code: classCode }, [{
-        $set: {
-            name: reqValues.name,
-            description: reqValues.description,
-            section_name: reqValues.section_name
-        }
-    }], (err, result) => {
-        if (err) {
-            console.log(err)
-        }
-        else {
-            res.json("Updated")
-        }
-    })
+    
 };
 
-exports.deleteClassroom = (req, res) => {
-    const classroomId = req.body["classroom_id"]
-    const teacherId = req.body["teacher_id"]
-    var classroomModules = []
-    var classroomStudents = []
+exports.deleteClassroom = async(req, res) => {
+    const classroomId = req.body.classroom_id
+    const teacherId = req.body.teacher_id
 
-    Teacher.updateOne({ _id: teacherId }, { $pull: { classroom: classroomId } }, (err, result) => {
-        if (err) {
-            return res.json("Error")
-        }
-        else {
-            Classroom.findOne({ _id: classroomId }, (err, result) => {
-                if (err) {
-                    return res.json("Error")
-                }
-                else {
-                    classroomModules = result.module
-                    classroomStudents = result.student
+    try {
+        await Teacher.updateOne({ _id: teacherId }, { $pull: { classroom: classroomId } })
+        const classroom = await Classroom.findOne({ _id: classroomId })
+        const classroomModules = classroom.module
+        const classroomStudents = classroom.student
 
-                    if (classroomModules.length != 0) {
-                        classroomModules.map(id => {
-                            Module.deleteOne({ _id: id }, (err, result) => {
-                                if (err) {
-                                    console.log(err)
-                                }
-                                else {
-                                }
-                            })
-                        })
-                    }
+        await Classroom.deleteOne({_id: classroomId})
 
-                    if (classroomStudents.length != 0) {
-                        classroomStudents.map(id => {
-                            StudentEnrolled.findOne({ _id: id }, (err, result) => {
-                                if (err) {
-                                    console.log(err)
-                                }
-                                else {
-                                    if (result != null) {
-                                        Student.updateOne({ _id: result.students.toString() }, { $pull: { classroom: classroomId } }, (err, result) => {
-                                            if (err) {
-                                                console.log(err)
-                                            }
-                                            else {
-                                                StudentEnrolled.deleteOne({ _id: id }, (err, result) => {
-                                                    if (err) {
-                                                        console.log(err)
-                                                    }
-                                                    else {
+        var lessonIds = []
 
-                                                    }
-                                                })
-                                            }
-                                        })
-                                    }
-                                }
+        const module = await Module.find({_id: {$in: classroomModules}})
+        await Module.deleteMany({_id: {$in: classroomModules}})
 
-                            })
+        module.map(module => {
+            lessonIds.push(...module.lessons)
+        })
+        
+        await ModuleLesson.deleteMany({_id: {$in: lessonIds}})
 
+        const studentEnrolled = await StudentEnrolled.find({_id: classroomStudents})
+        var studentsIds = []
 
-                        })
-                    }
+        studentEnrolled.map(studentEnrolled => {
+            studentsIds.push(studentEnrolled.students)
+        })
 
-                    Classroom.deleteOne({ _id: classroomId }, (err, result) => {
-                        if (err) {
-                            console.log(err)
-                        }
-                        else {
-                            res.json("Deleted")
-                        }
-                    })
-                }
-            })
-        }
-    })
+        await Student.updateMany({ _id: {$in: studentsIds} }, { $pull: { classroom: classroomId } })
+        await StudentEnrolled.deleteMany({_id : {$in: classroomStudents}})
+        res.json("Deleted")
+        
+    } catch (error) {
+        return res.json("Error")
+    }
 };
 
 exports.getClassroomStudents = (req, res) => {
@@ -595,7 +559,7 @@ exports.deleteStudent = (req, res) => {
 
 }
 
-exports.getStudentEnrolledData = (req, res) => {
+exports.getStudentModuleFinished = (req, res) => {
     const studentEnrolledId = req.params.student_enrolled_id
     var studentId = ""
     var finalValue = []
@@ -680,96 +644,86 @@ exports.getStudentEnrolledData = (req, res) => {
     })
 }
 
-exports.getClassroomModules = (req, res) =>{
+exports.getClassroomModules = async (req, res) =>{
     const classCode = req.params.class_code
     var finalValue = []
 
-    Classroom.findOne({ class_code: classCode }).populate("module").exec((err, result) => {
-        if (err) {
-            return res.json("Error")
+    try{
+        const classroom = await Classroom.findOne({class_code: classCode}).populate("module")
+        const module = classroom.module
+
+        var allModuleIds = []
+        var moduleIds = []
+        var finished = []
+
+        module.map(result => {
+            moduleIds.push(result._id)
+            allModuleIds.push(result.module_id)
+            finished.push(result.finished.length)
+        })
+
+        const allModule = await AllModule.find({_id: {$in: allModuleIds}}).sort({$natural: 1})
+        var tempValue = []
+
+        allModule.map((result, i)=> {
+            tempValue.push({
+            module_id: result._id,
+            type: result.type,
+            module_name: result.name,
+            classwork_code: result.classwork_code,
+            lesson_count: result.lesson.length
         }
-        else {
-            if (result != null) {
-                result.module.map(result => {
-                    finalValue.push({
-                        _id: result._id,
-                        module_file: {
-                            filename: result.module_file.filename
-                        },
-                        module_name: result.module_name,
-                        finished: result.finished.length
-                    })
+        )
 
-                })
+        })
 
-                return res.json(finalValue)
-            } else {
-                return res.json("Error")
+        for(var i = 0; i < allModuleIds.length; i++){
+            for(var j = 0; j < tempValue.length; j++){
+                if(allModuleIds[i] == tempValue[j].module_id.toString()){
+                    tempValue[j]._id = moduleIds[i]
+                    tempValue[j].finished = finished[i]
+
+                    finalValue.push(tempValue[j])
+                }
+
             }
         }
-    })
-}
 
-exports.viewModule = (req, res) => {
-    const moduleId = req.params.module_id
+        return res.json(finalValue)
 
-    Module.findOne({ _id: moduleId }, (err, result) => {
-        if (err) {
-            console.log(err)
-        }
-        else {
-            if (result != null) {
-                return res.end(result.module_file.file)
-            } else {
-                return res.json("Error")
-            }
-        }
-    })
+    }catch(e){
+        return res.json(finalValue)
+
+    }
 
 }
 
-exports.getModule = (req, res) => {
-    const moduleId = req.params.module_id
-
-    Module.findOne({ _id: moduleId }, (err, result) => {
-        if (err) {
-            return res.json("Error")
-        }
-        else {
-            if (result != null) {
-                return res.json(result.module_file.file)
-            } else {
-                return res.json("Error")
-            }
-        }
-    })
-}
-
-exports.downloadModule = (req, res) => {
-    const moduleId = req.params.module_id
-
-    Module.findOne({ _id: moduleId }, (err, result) => {
-        if (err) {
-            console.log(err)
-        }
-        else {
-            console.log(result.module_file.filename)
-            res.set({
-                "Content-Type": "application/pdf",
-                "Content-Disposition": "attachment; filename=" + result.module_file.filename
-            });
-            res.end(result.module_file.file)
-        }
-    })
-
-}
-
-exports.deleteModule = (req, res) => {
-    const moduleId = req.body["module_id"]
-    const classCode = req.body["class_code"]
+exports.deleteModule = async (req, res) => {
+    const moduleId = req.body.module_id
+    const classCode = req.body.class_code
 
     var classroomId = ""
     var moduleFinish = []
+
+    try {
+        const classroom = await Classroom.findOne({class_code: classCode })
+        
+        const classroomStudents = classroom.student
+        await StudentEnrolled.updateMany({_id: {$in: classroomStudents}}, {$pull: {module_finish: moduleId}})
+
+        await Classroom.updateOne({class_code: classCode}, {$pull: {module: moduleId}})
+
+        const module = await Module.findOne({_id: moduleId})
+        const lessons = module.lessons
+
+        await Module.deleteOne({_id: moduleId})
+        await ModuleLesson.deleteMany({_id: {$in: lessons}})
+
+        return res.json("Deleted")
+        
+    } catch (error) {
+        
+    }
 
     Classroom.findOne({class_code: classCode}, (err, result) =>{
         if(err){
@@ -905,109 +859,6 @@ exports.finishedStudents = (req, res) => {
 
                     }
                 })
-            }
-        }
-    })
-}
-
-exports.unfinishedStudents = (req, res) => {
-    const moduleId = req.params.module_id
-    const classCode = req.params.class_code
-
-    var studentEnrolledModuleFinished = []
-    var studentEnrolled = []
-    var studentEnrolledModuleUnFinished = []
-
-    Module.findOne({_id: moduleId}, (err, result) => {
-        if(err){
-            return res.json("Error")
-        }
-        else{
-            if(result != null){
-                studentEnrolledModuleFinished = result.finished
-            }
-
-        }
-    })
-
-    Classroom.findOne({class_code: classCode}, (err, result) => {
-        if(err){
-            return res.json("Error")
-        }
-        else{
-            if(result != null){
-                studentEnrolled = result.student
-
-                for(var i = 0; i< studentEnrolledModuleFinished.length; i++){
-                    var studentEnrolledId = studentEnrolledModuleFinished[0].toString()
-
-                    if(studentEnrolled.indexOf(studentEnrolledId) != -1){
-                        delete studentEnrolled[studentEnrolled.indexOf(studentEnrolledId)]
-                    }
-                }
-
-                return res.json(studentEnrolled)
-            }
-
-        }
-    })
-}
-
-exports.deleteAllClassrooms = (req, res) => {
-    const teacherId= req.body["teacher_id"]
-
-    Teacher.exists({_id: teacherId}, (err, result) => {
-        if(err){
-            return res.json("Error")
-        }else{
-            if(result != null){
-                Classroom.deleteMany({}, (err, result) => {
-                    if(err){
-
-                    }else{
-                        console.log("Classroom: ", result)
-                    }
-
-                })
-
-                Module.deleteMany({}, (err, result) => {
-                    if(err){
-
-                    }else{
-                        console.log("Module: ", result)
-
-                    }
-
-                })
-
-                StudentEnrolled.deleteMany({}, (err, result) => {
-                    if(err){
-
-                    }else{
-                        console.log("Student Enrolled: ", result)
-                    }
-
-                })
-
-                Student.updateMany({}, {$set: {classroom: []}}, (err, result) => {
-                    if(err){
-
-                    }else{
-                        console.log("Student: ", result)
-                    }
-
-                })
-
-                Teacher.updateMany({}, {$set: {classroom: []}}, (err, result) => {
-                    if(err){
-
-                    }else{
-                        console.log("Teacher: ", result)
-                        return res.json("All classroom has been deleted!")
-                    }
-                })
-            }else{
-                return res.json("Error!")
             }
         }
     })

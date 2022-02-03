@@ -21,7 +21,6 @@ module.exports = (app) => {
   router.get("/get-module/:module_id", studentController.getModule);
   router.get("/download-module/:module_id", studentController.downloadModule);
   router.post("/module-finish", studentController.moduleFinish);
-  router.post("/module-unfinish", studentController.moduleUnFinish);
   
   router.get("/get-classroom-teacher-fullname/:class_code", studentController.getClassroomTeacherFullname);
   router.get(

@@ -1,5 +1,6 @@
 module.exports = (app) => {
   require("./auth/accounts.routes")(app);
+  require("./Classroom/module.routes")(app);
   require("./Classroom/teacher.routes")(app);
   require("./Classroom/student.routes")(app);
   require("./Classroom/quiz.routes")(app);

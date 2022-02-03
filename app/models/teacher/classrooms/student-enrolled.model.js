@@ -7,6 +7,10 @@ module.exports = (mongoose) => {
         type: mongoose.Schema.Types.ObjectId,
         ref: "modules"
       }],
+      lesson_finish: [{ 
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "lessons"
+      }],
       student_name: { type: String, required: true },
       students: {
         type: mongoose.Schema.Types.ObjectId,

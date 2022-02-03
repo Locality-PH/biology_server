@@ -3,17 +3,17 @@ module.exports = (mongoose) => {
   var ModuleSchema = mongoose.Schema(
     {
       _id: { type: mongoose.Schema.Types.ObjectId },
-      module_file: {
-        file: { type: Buffer, required: true },
-        filename: { type: String, required: true },
-        mimetype: { type: String, required: true },
-      },
-      module_name: { type: String, required: true },
-      quiz_link : { type: String, required: true },
+      module_id: { type: mongoose.Schema.Types.ObjectId },
       finished: [
         {
           type: mongoose.Schema.Types.ObjectId,
           ref: "student_enrolled",
+        },
+      ],
+      lessons: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "modulelessons",
         },
       ]
     },
