@@ -4,6 +4,9 @@ const Classroom = db.classroom;
 const Teacher = db.teacher;
 const Quiz = db.quiz;
 const Scoreboard = db.scoreboard;
+const StudentEnrolled = db.student_enrolled
+const Lesson = db.lessons
+const ModuleLesson = db.modulelessons
 var mongoose = require("mongoose");
 
 
@@ -51,3 +54,65 @@ exports.validateStudent = async (req, res) => {
 
     });
 };
+
+// Specific Student
+exports.getStudentLessonScore = async(req, res) => {
+    const studentEnrolledId = req.params.student_enrolled_id
+    var finalValue = []
+
+    try {
+        // Need to return _id, lesson_name, finished_at, score
+        console.log("Student Lesson Score")
+        return res.json(finalValue)
+        
+    } catch (error) {
+        return res.json([])
+        
+    }
+}
+
+exports.getStudentModuleScore = async(req, res) => {
+    const studentEnrolledId = req.params.student_enrolled_id
+    var finalValue = []
+
+    try {
+        // Need to return _id, module_name, finished_at, score
+        console.log("Student Module Score")
+        return res.json(finalValue)
+
+    } catch (error) {
+        return res.json([])
+        
+    }
+}
+
+// All Students in Classroom
+exports.getStudentsLessonScore = async(req, res) => {
+    const moduleLessonId = req.params.module_lesson_id
+    var finalValue = []
+
+    try {
+        // Need to return _id, student_name, finished_at, score
+        console.log("Students Lesson Score")
+        return res.json(finalValue)
+
+    } catch (error) {
+        return res.json([])
+        
+    }
+}
+
+exports.getStudentsModuleScore = async(req, res) => {
+    const moduleId = req.params.module_id
+    var finalValue = []
+
+    try {
+        // Need to return _id, student_name, finished_at, score
+        console.log("Students Module Score")
+        return res.json(finalValue)
+
+    } catch (error) {
+        return res.json([])
+        
+    }
+}

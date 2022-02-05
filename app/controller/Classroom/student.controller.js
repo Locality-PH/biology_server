@@ -301,42 +301,63 @@ exports.getClassroomModules = async(req, res) =>{
     }
 }
 
-exports.getModule = (req, res) =>{
-    const moduleId = req.params.module_id
+exports.getClassroomDescription = async (req, res) => {
+    const classCode = req.params.class_code
 
-    Module.findOne({_id: moduleId}, (err, result) =>{
-        if(err){
-            return res.json("Error")
-        }
-        else{
-            if(result != null){
-                return res.json(result.module_file.file)
-            }else{
-                return res.json("Error")
-            }
-        }
-    })
+    try {
+        const classroom = await Classroom.findOne({class_code: classCode})
+        return res.json(classroom.description)
+        
+    } catch (error) {
+        return res.json("Error")
+        
+    }
 }
 
-exports.downloadModule = (req, res) => {
+exports.getModule = async(req, res) =>{
     const moduleId = req.params.module_id
-    
-    Module.findOne({_id: moduleId}, (err, result) => {
-        if(err)
-        {
-            console.log(err)
-        }
-        else
-        {
-            console.log( result.module_file.filename)
-            res.set({
-                "Content-Type": "application/pdf",
-                "Content-Disposition": "attachment; filename=" + result.module_file.filename
-              });
-            res.end(result.module_file.file)
-        }
-    })
 
+    try {
+        const module = await Module.findOne({_id: moduleId})
+        const allModuleId = module.module_id
+        const allModule = await AllModule.findOne({_id: allModuleId})
+        return res.json(allModule.files.file)
+
+    } catch (error) {
+        return res.json("Error")
+    }
+}
+
+exports.getLesson = async(req, res) =>{
+    const moduleLessonId = req.params.module_lesson_id
+
+    try {
+        const moduleLesson = await ModuleLesson.findOne({_id: moduleLessonId})
+        const lessonId = moduleLesson.lesson_id
+        const lesson = await Lesson.findOne({_id: lessonId})
+        return res.json(lesson.files.file)
+
+    } catch (error) {
+        return res.json("Error")
+    }
+}
+
+exports.downloadModule = async(req, res) => {
+    const moduleId = req.params.module_id
+
+    try {
+        const module = await Module.findOne({_id: moduleId})
+        const allModuleId = module.module_id
+        const allModule = await AllModule.findOne({_id: allModuleId})
+        res.set({
+            "Content-Type": "application/pdf",
+            "Content-Disposition": "attachment; filename=" + allModule.whole_content.filename
+          });
+        res.end(allModule.whole_content.file)
+
+    } catch (error) {
+        console.log("Error")
+    }
 }
 
 exports.moduleFinish = (req, res) => {

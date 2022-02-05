@@ -18,7 +18,12 @@ module.exports = (app) => {
     "/get-classroom-modules/:class_code/:student_id",
     studentController.getClassroomModules
   );
+  router.get(
+    "/get-classroom-description/:class_code",
+    studentController.getClassroomDescription
+  );
   router.get("/get-module/:module_id", studentController.getModule);
+  router.get("/get-lesson/:module_lesson_id", studentController.getLesson);
   router.get("/download-module/:module_id", studentController.downloadModule);
   router.post("/module-finish", studentController.moduleFinish);
   
