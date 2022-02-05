@@ -15,10 +15,10 @@ module.exports = (mongoose) => {
           ref: "allmodules",
         },
       ],
-      quiz: [
+      classwork: [
         {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "quizs",
+          ref: "classworks",
         },
       ],
     },

@@ -11,10 +11,10 @@ module.exports = (mongoose) => {
         type: mongoose.Schema.Types.ObjectId,
         ref: "modules",
       },
-      quiz:
+      classwork:
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "quizs",
+        ref: "classworks",
       },
       student:
       {
