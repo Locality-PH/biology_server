@@ -36,14 +36,17 @@ exports.createScoreboard = async (req, res) => {
     const newScoreboard = new Scoreboard(newScoreboardData)
     await newScoreboard.save()
 
+    var student_enrolled = await StudentEnrolled.findOne({ students: sid,  classroom_id: cid})
+    var student_enrolled_id = student_enrolled._id
+
     if (ct == "activity") {
         await StudentEnrolled.updateOne({ students: sid,  classroom_id: cid}, { $push: { lesson_finish: [mal_id] } })
-        await ModuleLesson.updateOne({_id: mal_id}, { $push: { finished: [sid] } })
+        await ModuleLesson.updateOne({_id: mal_id}, { $push: { finished: [student_enrolled_id] } })
     }
 
     if (ct == "quiz") {
         await StudentEnrolled.updateOne({ students: sid,  classroom_id: cid}, { $push: { module_finish: [mal_id] } })
-        await Module.updateOne({_id: mal_id}, { $push: { finished: [sid] } })
+        await Module.updateOne({_id: mal_id}, { $push: { finished: [student_enrolled_id] } })
     }
 
     res.json(newScoreboardData)
