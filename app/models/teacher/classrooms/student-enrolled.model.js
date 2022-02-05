@@ -9,7 +9,7 @@ module.exports = (mongoose) => {
       }],
       lesson_finish: [{ 
         type: mongoose.Schema.Types.ObjectId,
-        ref: "lessons"
+        ref: "modulelessons"
       }],
       student_name: { type: String, required: true },
       students: {
