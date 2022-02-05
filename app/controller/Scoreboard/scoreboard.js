@@ -2,19 +2,27 @@ const db = require("../../models");
 const Account = db.account;
 const Classroom = db.classroom;
 const Teacher = db.teacher;
-const Quiz = db.classwork;
+const Classwork = db.classwork;
 const Scoreboard = db.scoreboard;
 const StudentEnrolled = db.student_enrolled
 const Lesson = db.lessons
 const ModuleLesson = db.modulelessons
+const Module = db.modules
 var mongoose = require("mongoose");
 
 
 exports.createScoreboard = async (req, res) => {
     var newData = req.body.tempValues
+    var ct = newData.classwork_type
+    var mal_id = newData.mal_id
+    var cc = newData.class_code
+
     var new_id = new mongoose.Types.ObjectId();
     var sid = mongoose.Types.ObjectId(newData.student_id);
-    var cid = mongoose.Types.ObjectId(newData.classwork_id);
+
+    var classroom = await Classroom.findOne({class_code: cc})
+    var cid = classroom._id
+
     var newScoreboardData = {
         _id: new_id,
         answer_list: newData.answer_list,
@@ -22,30 +30,34 @@ exports.createScoreboard = async (req, res) => {
         max_score: newData.max_score,
         score: newData.score,
         student: sid, 
-        classwork: cid
+        mal_id
     }
 
     const newScoreboard = new Scoreboard(newScoreboardData)
-
-    // console.log(newScoreboardData)
     await newScoreboard.save()
 
+    if (ct == "activity") {
+        await StudentEnrolled.updateOne({ students: sid,  classroom_id: cid}, { $push: { lesson_finish: [mal_id] } })
+        await ModuleLesson.updateOne({_id: mal_id}, { $push: { finished: [sid] } })
+    }
+
+    if (ct == "quiz") {
+        await StudentEnrolled.updateOne({ students: sid,  classroom_id: cid}, { $push: { module_finish: [mal_id] } })
+        await Module.updateOne({_id: mal_id}, { $push: { finished: [sid] } })
+    }
+
     res.json(newScoreboardData)
+
 
 };
 
 exports.validateStudent = async (req, res) => {
     console.log(req.body)
 
-    var cc = req.body.cc // classwork_code
     var sid = req.body.sid // student_id
-    var classwork = await Quiz.findOne({classwork_link: cc});
-    var cid = classwork._id
+    var mal_id = req.body.mal_id 
 
-    console.log(classwork)
-    console.log(cid)
-
-    Scoreboard.findOne({classwork: cid, student: sid}, (err, result) => {
+    Scoreboard.findOne({mal_id: mal_id, student: sid, }, (err, result) => {
         if (err) {
             console.log(err)
             res.json("error");

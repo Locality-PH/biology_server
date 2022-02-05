@@ -46,7 +46,5 @@ module.exports = (app) => {
   );
   router.post("/delete-module", teacherController.deleteModule);
 
-  router.get("/finished-students/:module_id", teacherController.finishedStudents);
-
   app.use("/api/teacher", router);
 };

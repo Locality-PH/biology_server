@@ -6,6 +6,7 @@ const StudentEnrolled = db.student_enrolled
 const Student = db.student;
 const Teacher = db.teacher;
 const Classwork = db.classwork;
+const ModuleLesson = db.modulelessons
 var mongoose = require("mongoose");
 
 
@@ -112,9 +113,10 @@ exports.getTeacherClassworkByCode = async (req, res) => {
 
 exports.getStudentClassworkByCode = async (req, res) => {
     var classwork_code = req.params.classwork_code
+    var ct = req.body.ct
     var sid = req.body.sid
     var cc = req.body.class_code
-    var mid = req.body.mid
+    var mal_id = req.body.mal_id
     let isStudentValid = false
 
     var student = await Student.findById(sid).populate("classroom");
@@ -122,11 +124,25 @@ exports.getStudentClassworkByCode = async (req, res) => {
     var cid = classroom._id
 
     var isEnrolled = await StudentEnrolled.findOne({ classroom_id: cid, students: sid })
-    var isModuleValid = await Module.findOne({ _id: mid, classwork_link: classwork_code })
 
-    if (isEnrolled != null && isModuleValid != null) {
-        isStudentValid = true
+    if (ct == "quiz") {
+        var isModuleValid = await Module.findOne({ _id: mal_id }).populate("module_id")
+        isModuleValid = isModuleValid.module_id.classwork_code
+
+        if (isEnrolled != null && isModuleValid == classwork_code) {
+            isStudentValid = true
+        } 
     }
+
+    if (ct == "activity") {
+        var isLessonValid = await ModuleLesson.findOne({ _id: mal_id }).populate("lesson_id")
+        isLessonValid = isLessonValid.lesson_id.classwork_code
+
+        if (isEnrolled != null && isLessonValid == classwork_code) {
+            isStudentValid = true
+        } 
+    }
+
 
     if (isStudentValid) {
         try {

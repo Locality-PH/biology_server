@@ -3,7 +3,10 @@ module.exports = (mongoose) => {
   var ModuleSchema = mongoose.Schema(
     {
       _id: { type: mongoose.Schema.Types.ObjectId },
-      module_id: { type: mongoose.Schema.Types.ObjectId },
+      module_id: { 
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "allmodules"
+      },
       finished: [
         {
           type: mongoose.Schema.Types.ObjectId,
