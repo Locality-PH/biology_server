@@ -36,7 +36,7 @@ exports.createClasswork = async (req, res) => {
     else if (Array.isArray(cin)) {
         cin.map((cin, i) => {
             var tcin = JSON.parse(cin)
-    
+
             if (tcin.isNewFile == true) {
                 var img_file = img_files[`question${tcin.index + 1}_image`]
 
@@ -131,7 +131,7 @@ exports.getStudentClassworkByCode = async (req, res) => {
 
         if (isEnrolled != null && isModuleValid == classwork_code) {
             isStudentValid = true
-        } 
+        }
     }
 
     if (ct == "activity") {
@@ -140,7 +140,7 @@ exports.getStudentClassworkByCode = async (req, res) => {
 
         if (isEnrolled != null && isLessonValid == classwork_code) {
             isStudentValid = true
-        } 
+        }
     }
 
 
@@ -169,14 +169,13 @@ exports.getAllClasswork = async (req, res) => {
 
     const tid = req.params.tid
 
-    Teacher.findOne({ _id: tid }).populate("classwork").exec((err, result) => {
-        if (err) {
-            console.log(err)
-        }
-        else {
-            return res.json(result.classwork)
-        }
-    })
+    try {
+        const teacher = await Teacher.findOne({ _id: tid }).populate({ path: 'classwork', options: { sort: { updatedAt: -1 } } })
+        const teacher_classworks = teacher.classwork
+        res.json(teacher_classworks)
+    } catch (error) {
+       console.log(error)
+    }
 
 };
 
@@ -213,12 +212,12 @@ exports.updateClasswork = async (req, res) => {
     else if (Array.isArray(cin)) {
         cin.map((cin, i) => {
             var tcin = JSON.parse(cin)
-            
+
             if (tcin.isNewFile == false) {
                 var oq = oldClasswork.question
                 newClasswork.question[tcin.index].img = oq[tcin.index].img
             }
-    
+
             else if (tcin.isNewFile == true) {
                 var img_file = img_files[`question${tcin.index + 1}_image`]
 
