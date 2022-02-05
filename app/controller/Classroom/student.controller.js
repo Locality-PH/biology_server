@@ -249,23 +249,48 @@ exports.getClassroomModules = async(req, res) =>{
                         populate: 
                             {path: "lesson_id"}}})
 
+        const classroomId = classroom._id
+        const studentEnrolled = await StudentEnrolled.findOne({students: studentId, classroom_id: classroomId})
+        const studentEnrolledId = studentEnrolled._id
+        
         const module = classroom.module
 
         module.map((moduleData, moduleIndex) => {
             const lessons = moduleData.lessons
+            var moduleIsDisabled = true
+
+            if(moduleIndex == 0){
+                moduleIsDisabled = false
+
+            }else if(moduleIndex != 0){
+                if(module[moduleIndex - 1].finished.indexOf(studentEnrolledId.toString()) != -1){
+                    moduleIsDisabled = false
+                }
+            }
 
             finalValue.push({
                 module_id: moduleData._id,
-                disabled: false,
+                disabled: moduleIsDisabled,
                 lessons: []
             })
 
             lessons.map((lessonsData, lessonsIndex) => {
+                var lessonIsDisabled = true
+
+                if(lessonsIndex == 0){
+                    lessonIsDisabled = false
+    
+                }else if(lessonsIndex != 0){
+                    if(lessons[lessonsIndex - 1].finished.indexOf(studentEnrolledId.toString()) != -1){
+                        lessonIsDisabled = false
+                    }
+                }
+                
                 finalValue[moduleIndex].lessons.push({
                     module_lesson_id: lessonsData._id,
                     lesson_name: lessonsData.lesson_id.name,
                     classwork_code: lessonsData.lesson_id.classwork_code,
-                    disabled: false
+                    disabled: lessonIsDisabled
                 })
 
             })

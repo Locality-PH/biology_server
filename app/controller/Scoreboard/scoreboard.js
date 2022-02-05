@@ -75,8 +75,31 @@ exports.getStudentLessonScore = async(req, res) => {
     var finalValue = []
 
     try {
-        // Need to return _id, lesson_name, finished_at, score
-        console.log("Student Lesson Score")
+        const studentEnrolled = await StudentEnrolled.findOne({_id: studentEnrolledId}).populate(
+            {path: 'lesson_finish',
+                populate: 
+                    {path: 'lesson_id'}})
+
+        const studentId = studentEnrolled.students
+        var lessonFinishIds = []
+
+        studentEnrolled.lesson_finish.map(lessonFinishData => {
+            lessonFinishIds.push(lessonFinishData._id)
+            finalValue.push(
+                {_id: lessonFinishData._id,
+                lesson_name: lessonFinishData.lesson_id.name}
+            )
+        })
+
+        const scoreboard = await Scoreboard.find({mal_id: {$in: lessonFinishIds}, student: studentId})
+
+        scoreboard.map((scoreboardData, i) => {
+            var date = new Date(scoreboardData.createdAt)
+
+            finalValue[i].finished_at = date.toDateString() + ", " + date.toLocaleTimeString()
+            finalValue[i].score = scoreboardData.score + "/" + scoreboardData.max_score
+        })
+
         return res.json(finalValue)
         
     } catch (error) {
@@ -90,8 +113,31 @@ exports.getStudentModuleScore = async(req, res) => {
     var finalValue = []
 
     try {
-        // Need to return _id, module_name, finished_at, score
-        console.log("Student Module Score")
+        const studentEnrolled = await StudentEnrolled.findOne({_id: studentEnrolledId}).populate(
+            {path: 'module_finish',
+                populate: 
+                    {path: 'module_id'}})
+
+        const studentId = studentEnrolled.students
+        var moduleFinishIds = []
+
+        studentEnrolled.module_finish.map(moduleFinishData => {
+            moduleFinishIds.push(moduleFinishData._id)
+            finalValue.push(
+                {_id: moduleFinishData._id,
+                module_name: moduleFinishData.module_id.name}
+            )
+        })
+
+        const scoreboard = await Scoreboard.find({mal_id: {$in: moduleFinishIds}, student: studentId})
+
+        scoreboard.map((scoreboardData, i) => {
+            var date = new Date(scoreboardData.createdAt)
+
+            finalValue[i].finished_at = date.toDateString() + ", " + date.toLocaleTimeString()
+            finalValue[i].score = scoreboardData.score + "/" + scoreboardData.max_score
+        })
+        
         return res.json(finalValue)
 
     } catch (error) {
@@ -106,8 +152,26 @@ exports.getStudentsLessonScore = async(req, res) => {
     var finalValue = []
 
     try {
-        // Need to return _id, student_name, finished_at, score
-        console.log("Students Lesson Score")
+        const moduleLesson = await ModuleLesson.findOne({_id: moduleLessonId}).populate("finished")
+
+        var studentIds = []
+
+        moduleLesson.finished.map(moduleLessonData => {
+            studentIds.push(moduleLessonData.students)
+            finalValue.push({
+                _id: moduleLessonData._id,
+                student_name: moduleLessonData.student_name
+            })
+        })
+
+        const scoreboard = await Scoreboard.find({mal_id: moduleLessonId, student: {$in: studentIds}})
+
+        scoreboard.map((scoreboardData, i) => {
+            var date = new Date(scoreboardData.createdAt)
+            finalValue[i].finished_at = date.toDateString() + ", " + date.toLocaleTimeString()
+            finalValue[i].score = scoreboardData.score + "/" + scoreboardData.max_score
+        })
+
         return res.json(finalValue)
 
     } catch (error) {
@@ -121,8 +185,26 @@ exports.getStudentsModuleScore = async(req, res) => {
     var finalValue = []
 
     try {
-        // Need to return _id, student_name, finished_at, score
-        console.log("Students Module Score")
+        const module = await Module.findOne({_id: moduleId}).populate("finished")
+
+        var studentIds = []
+
+        module.finished.map(moduleData => {
+            studentIds.push(moduleData.students)
+            finalValue.push({
+                _id: moduleData._id,
+                student_name: moduleData.student_name
+            })
+        })
+
+        const scoreboard = await Scoreboard.find({mal_id: moduleId, student: {$in: studentIds}})
+
+        scoreboard.map((scoreboardData, i) => {
+            var date = new Date(scoreboardData.createdAt)
+            finalValue[i].finished_at = date.toDateString() + ", " + date.toLocaleTimeString()
+            finalValue[i].score = scoreboardData.score + "/" + scoreboardData.max_score
+        })
+
         return res.json(finalValue)
 
     } catch (error) {

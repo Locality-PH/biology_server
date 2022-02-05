@@ -496,75 +496,34 @@ exports.getClassroomStudents = (req, res) => {
     })
 }
 
-exports.deleteStudent = (req, res) => {
-    const studentId = req.body["student_id"]
-    const classCode = req.body["class_code"]
+exports.deleteStudent = async(req, res) => {
+    const studentId = req.body.student_id
+    const classCode = req.body.class_code
     var classroomId = ""
     var studentEnrolledId = ""
     var moduleFinish = []
+    var lessonFinish = []
 
-    Classroom.findOne({class_code: classCode}, (err, result) =>{
-        if(err){
-            return res.json("Error")
-        }
-        else {
-            if (result != null) {
-                classroomId = result._id
+    try {
+        const classroom = await Classroom.findOne({class_code: classCode})
+        classroomId = classroom._id
+        const studentEnrolled = await StudentEnrolled.findOne({students: studentId, classroom_id: classroomId})
+        moduleFinish = studentEnrolled.module_finish
+        lessonFinish = studentEnrolled.lesson_finish
+        studentEnrolledId = studentEnrolled._id
 
-                Student.updateOne({_id: studentId}, {$pull: {classroom: classroomId.toString()}}, (err, result) =>{
-                    if(err){
-                        console.log(err)
-                    }
-                    else{
-                        StudentEnrolled.findOne({classroom_id: classroomId, students: studentId}, (err, result) => {
-                            if(err){
-                                console.log(err)
-                            }
-                            else{
-                                if(result != null){
-                                    studentEnrolledId = result._id
-                                    moduleFinish = result.module_finish
-            
-                                    moduleFinish.map(id => {
-                                        Module.updateOne({_id: id}, {$pull: {finished: studentEnrolledId.toString()}}, (err, result) =>{
-                                            if(err){
-                                                console.log(err)
-                                            }
-                                            else{
-            
-                                            }
-                                        })
-            
-                                    })
-                    
-                                    StudentEnrolled.deleteOne({_id: studentEnrolledId}, (err, result) =>{
-                                        if(err){
-                                            console.log(err)
-                                        }
-                                        else{
-                                        }
-                                    })
-                    
-                                    Classroom.updateOne({_id: classroomId}, {$pull: {student: studentEnrolledId}}, (err, result) =>{
-                                        if(err){
-                                            console.log(err)
-                                        }
-                                        else{
-                                            res.json("Deleted")
-                                        }
-                                    })
-                                }
-                            }
-                        })
-                   
-                    }
-                })
+        await Classroom.updateOne({class_code: classCode}, {$pull: {student: studentEnrolledId}})
+        await StudentEnrolled.deleteOne({_id: studentEnrolledId})
+        await Module.updateMany({_id: {$in: moduleFinish}}, {$pull: {finished: studentEnrolledId}})
+        await ModuleLesson.updateMany({_id: {$in: lessonFinish}}, {$pull: {finished: studentEnrolledId}})
 
-            }else{
-                return res.json("Error")
-            }
-        }
-    })
+        await Student.updateOne({_id: studentId}, {$pull: {classroom: classroomId}})
+        return res.json("Deleted")
+        
+    } catch (error) {
+        return res.json("Error")
+        
+    }
 
 }
 
@@ -731,62 +690,6 @@ exports.deleteModule = async (req, res) => {
         return res.json("Deleted")
         
     } catch (error) {
-        
+        return res.json("Error")
     }
-
-    Classroom.findOne({class_code: classCode}, (err, result) =>{
-        if(err){
-            return res.json("Error")
-        }
-        else{
-            if(result != null){
-                classroomId = result._id
-
-                Module.findOne({_id: moduleId}, (err, result) => {
-                    if(err){
-                        console.log(err)
-                    }
-                    else{
-                        if(result != null){
-                            moduleFinish = result.finished
-    
-                            moduleFinish.map(id => {
-                                StudentEnrolled.updateOne({_id: id}, {$pull: {module_finish: moduleId}}, (err, result) =>{
-                                    if(err){
-                                        console.log(err)
-                                    }
-                                    else{
-    
-                                    }
-                                })
-    
-                            })
-
-                            Classroom.updateOne({class_code: classCode}, {$pull: {module: moduleId}}, (err, result) =>{
-                                if(err){
-                                    return res.json("Error")
-                                }
-                                else{
-                                    Module.deleteOne({_id: moduleId}, (err, result) => {
-                                        if(err){
-                                            return res.json("Error")
-                                        }
-                                        else{
-                                            return res.json("Deleted")
-                                        }
-                                    })
-                                }
-                            })
-            
-                        }
-                    }
-                })
-
-            }else{
-                return res.json("Error")
-            }
-        }
-    })
-
-    
 }
