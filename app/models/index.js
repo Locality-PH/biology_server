@@ -12,15 +12,17 @@ db.account = require("./auth/accounts.model.js")(mongoose);
 //Teachers
 db.teacher = require("./teacher/teacher.model.js")(mongoose);
 db.classroom = require("./teacher/classroom.model.js")(mongoose);
-db.quiz = require("./teacher/classrooms/quiz/quizs.model")(mongoose);
+db.classwork = require("./teacher/classrooms/classwork/classworks.model")(mongoose);
 db.scoreboard = require("./teacher/scoreboard/scoreboard.js")(mongoose);
 db.modules = require("./teacher/classrooms/modules.model.js")(mongoose);
 db.student_enrolled = require("./teacher/classrooms/student-enrolled.model.js")(
   mongoose
 );
 
-//PresetModules
-db.presetmodules = require("./teacher/preset-modules.model.js")(mongoose);
+//Modules
+db.allmodules = require("./teacher/all-modules.model")(mongoose)
+db.lessons = require("./teacher/lesson.model")(mongoose)
+db.modulelessons = require("./teacher/module-lessons.model")(mongoose)
 //Students
 db.student = require("./student/student.model.js")(mongoose);
 
