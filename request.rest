@@ -79,14 +79,11 @@ Content-Type: application/json
 
 
 ###
-Get http://localhost:5000/student/get-classroom-modules/q6qthluzb
+Get http://genbioscope/student/get-classroom-modules/q6qthluzb
 Content-Type: application/json
 
 ###
-POST http://localhost:3000/api/admin/google-login
+POST https://genbioscope.com/api/admin/google-login
 Content-Type: application/json
 
-{
-"email": "asdsada",
-"auth_id": "1231" 
-}
+{"email":"your.email+fakedata31487@gmail.com","uuid":"hjfYesk16ccJUQnJw6Ta3JclmUz1","full_name":"Terrance O'Keefe"}
