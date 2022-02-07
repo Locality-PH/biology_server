@@ -293,6 +293,16 @@ exports.getClassroomModules = async(req, res) =>{
                     disabled: lessonIsDisabled
                 })
 
+                if(lessons.length == lessonsIndex + 1){
+                    if(lessons[lessonsIndex].finished.indexOf(studentEnrolledId.toString()) != -1){
+                        finalValue[moduleIndex].quiz_disabled = false
+                    }else{
+                        finalValue[moduleIndex].quiz_disabled = true
+
+                    }
+
+                }
+
             })
         })
 
