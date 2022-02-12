@@ -8,6 +8,7 @@ module.exports = (mongoose) => {
                 type: [{
                     // { question_id: { type: mongoose.Schema.Types.ObjectId} },
                     string: { type: String },
+                    score: { type: Number },
                     type: { type: String },
                     answer: { type: Array },
                     option: { type: Array },

@@ -19,16 +19,16 @@ exports.createClasswork = async (req, res) => {
     var newClassworkId = new mongoose.Types.ObjectId();
     newClasswork["_id"] = newClassworkId
 
-    console.log(cin)
-    console.log(img_files)
+    // console.log(cin)
+    // console.log(img_files)
 
     if (typeof cin == "string") {
         var tcin = JSON.parse(cin)
-        console.log(tcin)
+        // console.log(tcin)
 
         if (tcin.isNewFile == true) {
             var img_file = img_files[`question${tcin.index + 1}_image`]
-            console.log(img_file)
+            // console.log(img_file)
             newClasswork.question[tcin.index].img = { file: img_file.data, filename: img_file.name }
         }
     }
@@ -46,12 +46,12 @@ exports.createClasswork = async (req, res) => {
         })
     }
 
-    console.log(newClasswork)
+    // console.log(newClasswork)
 
     try {
         const newClassworkData = new Classwork(newClasswork)
         await newClassworkData.save()
-        console.log(newClassworkId)
+        // console.log(newClassworkId)
         await Teacher.updateOne({ _id: tid }, { $push: { classwork: [newClassworkId] } })
     } catch (e) {
         console.log(e);
@@ -63,7 +63,7 @@ exports.createClasswork = async (req, res) => {
 
 exports.getClasswork = async (req, res) => {
     var Cid = req.params.Cid
-    console.log(Cid)
+    // console.log(Cid)
 
     try {
         Classwork.findById(Cid, (err, result) => {
@@ -86,7 +86,11 @@ exports.getTeacherClassworkByCode = async (req, res) => {
     var teacher = await Teacher.findById(tid).populate("classwork");
     let isClassworkValid = false
 
+    // console.log("classwork_code", classwork_code)
+    // console.log("Code from teacher:")
+
     teacher.classwork.map((classwork) => {
+        // console.log(classwork.classwork_link)
         if (classwork.classwork_link == classwork_code) {
             isClassworkValid = true
         }
@@ -180,8 +184,8 @@ exports.getAllClasswork = async (req, res) => {
 };
 
 exports.updateClasswork = async (req, res) => {
-    console.log(req.files)
-    console.log(req.body)
+    // console.log(req.files)
+    // console.log(req.body)
 
     const cin = (req.body.question_index)
     const cid = (req.body.classwork_id)
@@ -190,12 +194,12 @@ exports.updateClasswork = async (req, res) => {
     var newClasswork = JSON.parse(req.body.newClasswork)
     var oldClasswork = await Classwork.findById(cid)
 
-    console.log(newClasswork)
-    console.log(typeof cin == "string")
+    // console.log(newClasswork)
+    // console.log(typeof cin == "string")
 
     if (typeof cin == "string") {
         var tcin = JSON.parse(cin)
-        console.log(tcin)
+        // console.log(tcin)
 
         if (tcin.isNewFile == false) {
             var oq = oldClasswork.question
@@ -204,7 +208,7 @@ exports.updateClasswork = async (req, res) => {
 
         else if (tcin.isNewFile == true) {
             var img_file = img_files[`question${tcin.index + 1}_image`]
-            console.log(img_file)
+            // console.log(img_file)
             newClasswork.question[tcin.index].img = { file: img_file.data, filename: img_file.name }
         }
     }
@@ -227,7 +231,7 @@ exports.updateClasswork = async (req, res) => {
         })
     }
 
-    console.log(newClasswork)
+    // console.log(newClasswork)
 
     try {
         Classwork.updateOne({ _id: cid }, newClasswork, (err, result) => {
@@ -246,7 +250,7 @@ exports.updateClasswork = async (req, res) => {
 
 exports.deleteClasswork = async (req, res) => {
 
-    console.log(req.body)
+    // console.log(req.body)
 
     const tid = req.body.tid
     const Cid = req.body.Cid
@@ -271,10 +275,10 @@ exports.deleteClasswork = async (req, res) => {
 
 exports.uploadImage = async (req, res) => {
 
-    console.log(req.files)
-    console.log(req.body)
+    // console.log(req.files)
+    // console.log(req.body)
 
-    console.log("test", req.files.question4_image)
+    // console.log("test", req.files.question4_image)
 
 
 };
