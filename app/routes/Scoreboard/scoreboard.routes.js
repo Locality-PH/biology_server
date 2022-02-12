@@ -3,6 +3,7 @@ module.exports = (app) => {
     var router = require("express").Router();
   
     router.post("/create", scoreboardController.createScoreboard);
+    router.post("/update_score", scoreboardController.updateStudentScore);
     router.post("/validate/student/", scoreboardController.validateStudent);
     
     router.get("/get-student-lesson-score/:student_enrolled_id", scoreboardController.getStudentLessonScore)

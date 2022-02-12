@@ -460,12 +460,14 @@ exports.deleteClassroom = async(req, res) => {
 
         const module = await Module.find({_id: {$in: classroomModules}})
         await Module.deleteMany({_id: {$in: classroomModules}})
+        await Scoreboard.deleteMany({mal_id: {$in: classroomModules}})
 
         module.map(module => {
             lessonIds.push(...module.lessons)
         })
         
         await ModuleLesson.deleteMany({_id: {$in: lessonIds}})
+        await Scoreboard.deleteMany({mal_id: {$in: lessonIds}})
 
         const studentEnrolled = await StudentEnrolled.find({_id: classroomStudents})
         var studentsIds = []
