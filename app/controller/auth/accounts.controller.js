@@ -14,11 +14,12 @@ exports.registerUser = async (req, res) => {
     return;
   }
 
-  await Account.exists({ email: email }, async (err, result) => {
+  await Account.exists({ email }, async (err, result) => {
     if (err) {
       console.log(err);
     } else {
       currentUserId = result;
+      console.log(currentUserId);
       if (currentUserId !== null) {
         // if user existed
         console.log("user exist");

@@ -7,14 +7,10 @@ Content-Type: application/json
 
 }
 ###
-POST http://localhost:5000/api/student/register 
+POST http://localhost:5000/api/admin/register 
 Content-Type: application/json
 
-{
-"email": "asdsada",
-"auth_id": "1231"
-
-}
+{"email":"your.esmsail+fakedata90284@gmail.com","fullName":"Vern Quigley","uuid":"E5Q3DsIlfmUkEyG8RNmoiRXBwyO2"}
 ###
 GET http://localhost:5000/api/admin/login/QcOTeiLFs4NCXwq01PUPZR6LAl62
 
@@ -22,7 +18,7 @@ GET http://localhost:5000/api/admin/login/QcOTeiLFs4NCXwq01PUPZR6LAl62
 ###
 
 
-GET http://localhost:3000/api/student/login/QcOTeiLFs4NCXwq01PUPZR6LAl62
+GET http://genbioscope.com/api/admin/login/QcOTeiLFs4NCXwq01PUPZR6LAl62
 Content-Type: application/json
 
 ###
