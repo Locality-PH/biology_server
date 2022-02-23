@@ -518,7 +518,8 @@ exports.deleteStudent = async(req, res) => {
         await StudentEnrolled.deleteOne({_id: studentEnrolledId})
         await Module.updateMany({_id: {$in: moduleFinish}}, {$pull: {finished: studentEnrolledId}})
         await ModuleLesson.updateMany({_id: {$in: lessonFinish}}, {$pull: {finished: studentEnrolledId}})
-
+        await Scoreboard.deleteMany({mal_id: {$in: lessonFinish}, student: studentId})
+        await Scoreboard.deleteMany({mal_id: {$in: moduleFinish}, student: studentId})
         await Student.updateOne({_id: studentId}, {$pull: {classroom: classroomId}})
         return res.json("Deleted")
         
