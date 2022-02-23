@@ -24,6 +24,7 @@ module.exports = (mongoose) => {
                 maxlength: 10,
                 unique: true,
             },
+            type: {type: String}
         },
 
         { timestamps: true }

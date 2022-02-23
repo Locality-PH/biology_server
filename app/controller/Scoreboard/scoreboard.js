@@ -74,8 +74,9 @@ exports.validateStudent = async (req, res) => {
 
     var sid = req.body.sid // student_id
     var mal_id = req.body.mal_id
+    var cc = req.body.cc
 
-    Scoreboard.findOne({ mal_id: mal_id, student: sid, }, (err, result) => {
+    Scoreboard.findOne({ mal_id: mal_id, student: sid, classwork_code: cc }, (err, result) => {
         if (err) {
             console.log(err)
             res.json("error");

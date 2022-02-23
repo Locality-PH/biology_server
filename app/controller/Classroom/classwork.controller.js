@@ -7,6 +7,8 @@ const Student = db.student;
 const Teacher = db.teacher;
 const Classwork = db.classwork;
 const ModuleLesson = db.modulelessons
+const Lesson = db.lessons
+const AllModule = db.allmodules
 var mongoose = require("mongoose");
 
 
@@ -18,9 +20,7 @@ exports.createClasswork = async (req, res) => {
     var newClasswork = JSON.parse(req.body.newClasswork)
     var newClassworkId = new mongoose.Types.ObjectId();
     newClasswork["_id"] = newClassworkId
-
-    // console.log(cin)
-    // console.log(img_files)
+    newClasswork["type"] = "private"
 
     if (typeof cin == "string") {
         var tcin = JSON.parse(cin)
@@ -83,29 +83,37 @@ exports.getClasswork = async (req, res) => {
 exports.getTeacherClassworkByCode = async (req, res) => {
     var classwork_code = req.params.classwork_code
     var tid = req.body.tid
-    var teacher = await Teacher.findById(tid).populate("classwork");
-    let isClassworkValid = false
 
-    // console.log("classwork_code", classwork_code)
-    // console.log("Code from teacher:")
+    try {
+        var teacher = await Teacher.findById(tid).populate("classwork");
+        var classwork = await Classwork.findOne({ classwork_link: classwork_code })
+        let isClassworkValid = false
 
-    teacher.classwork.map((classwork) => {
-        // console.log(classwork.classwork_link)
-        if (classwork.classwork_link == classwork_code) {
-            isClassworkValid = true
+        if (classwork == null) {
+            res.json("failed")
         }
-    })
+
+    } catch (error) {
+        console.log(error)
+        res.json("failed")
+    }
+
+
+    if (classwork.type == "public") {
+        isClassworkValid = true
+    } 
+    
+    else {
+        teacher.classwork.map((classwork) => {
+            if (classwork.classwork_link == classwork_code) {
+                isClassworkValid = true
+            }
+        })
+    }
 
     if (isClassworkValid) {
         try {
-            Classwork.findOne({ classwork_link: classwork_code }, (err, result) => {
-                if (err) {
-                    console.log(err)
-                    res.json("error");
-                } else {
-                    res.json(result);
-                }
-            })
+            res.json(classwork)
         } catch (error) {
             console.log(error)
         }
@@ -184,8 +192,6 @@ exports.getAllClasswork = async (req, res) => {
 };
 
 exports.updateClasswork = async (req, res) => {
-    // console.log(req.files)
-    // console.log(req.body)
 
     const cin = (req.body.question_index)
     const cid = (req.body.classwork_id)
@@ -194,12 +200,8 @@ exports.updateClasswork = async (req, res) => {
     var newClasswork = JSON.parse(req.body.newClasswork)
     var oldClasswork = await Classwork.findById(cid)
 
-    // console.log(newClasswork)
-    // console.log(typeof cin == "string")
-
     if (typeof cin == "string") {
         var tcin = JSON.parse(cin)
-        // console.log(tcin)
 
         if (tcin.isNewFile == false) {
             var oq = oldClasswork.question
@@ -208,7 +210,6 @@ exports.updateClasswork = async (req, res) => {
 
         else if (tcin.isNewFile == true) {
             var img_file = img_files[`question${tcin.index + 1}_image`]
-            // console.log(img_file)
             newClasswork.question[tcin.index].img = { file: img_file.data, filename: img_file.name }
         }
     }
@@ -231,8 +232,6 @@ exports.updateClasswork = async (req, res) => {
         })
     }
 
-    // console.log(newClasswork)
-
     try {
         Classwork.updateOne({ _id: cid }, newClasswork, (err, result) => {
             if (err) {
@@ -250,26 +249,22 @@ exports.updateClasswork = async (req, res) => {
 
 exports.deleteClasswork = async (req, res) => {
 
-    // console.log(req.body)
+    const tid = req.body.tid // teacher_id
+    const cid = req.body.cid //classwork_id
+    const cc = req.body.cc //classwork_code
 
-    const tid = req.body.tid
-    const Cid = req.body.Cid
+    try {
+        await Teacher.updateOne({ _id: tid }, { $pull: { classwork: cid } })
+        await Classwork.deleteOne({ _id: cid })
+        await AllModule.updateMany({classwork_code: cc}, {$unset: {classwork_code: null }})
+        await Lesson.updateMany({classwork_code: cc}, {$unset: {classwork_code: null }})
+    } catch (error) {
+        console.log(error)
+        res.json("Error")
+    }
 
-    Teacher.updateOne({ _id: tid }, { $pull: { classwork: Cid } }, (err, result) => {
-        if (err) {
-            return res.json("Error")
-        }
-        else {
-            Classwork.deleteOne({ _id: Cid }, (err, result) => {
-                if (err) {
-                    return res.json("Error")
-                }
-                else {
-                    return res.json("Deleted")
-                }
-            })
-        }
-    })
+    res.json("Deleted")
+
 
 };
 
@@ -279,6 +274,5 @@ exports.uploadImage = async (req, res) => {
     // console.log(req.body)
 
     // console.log("test", req.files.question4_image)
-
 
 };
